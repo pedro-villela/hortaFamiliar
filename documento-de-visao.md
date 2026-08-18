@@ -1,7 +1,7 @@
-# Documento de Visão e Escopo — Projeto Horta Familiaeer
+# Documento de Visão e Escopo — Projeto Horta Familiar
 
 ## 1. Visão Geral do Projeto
-O **Projeto Horta Familiaeer** tem como objetivo o desenvolvimento de um software de gestão voltado para hortas familiares e comunitárias. A plataforma visa otimizar o planejamento de plantio, o controle de insumos e colheitas, e o gerenciamento de tarefas entre os membros da família ou comunidade, promovendo a sustentabilidade e a eficiência na produção agrícola urbana ou doméstica.
+O **Projeto Horta Familiar** tem como objetivo o desenvolvimento de um software de gestão voltado para hortas familiares e comunitárias. A plataforma visa otimizar o planejamento de plantio, o controle de insumos e colheitas, e o gerenciamento de tarefas entre os membros da família ou comunidade, promovendo a sustentabilidade e a eficiência na produção agrícola urbana ou doméstica.
 
 ## 2. Perfis de Usuário e Controle de Acesso
 O sistema contará com autenticação de usuários e controle de acesso baseado em papéis (RBAC), contemplando pelo menos dois perfis distintos:
