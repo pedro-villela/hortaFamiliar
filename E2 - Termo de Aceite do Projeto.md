@@ -40,4 +40,5 @@
 | Pedro Villela      | Analista de Qualidade / Deploy         |
 
 ## 5. Aprovação
-- Professor: Data: 28/08/2026
+- Professor:
+- Data: 28/08/2026
