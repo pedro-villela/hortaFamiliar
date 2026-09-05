@@ -30,7 +30,7 @@ classDiagram
     +idUsuario: int
     +nome: string
     +email: string
-    +senhaHash: string
+    +senha: string
     +perfil: enum
     +fazerLogin(email, senha) bool
   }
@@ -62,6 +62,8 @@ classDiagram
   
   class Plantio {
     +idPlantio: int
+    +idCultura: int
+    +idCanteiro: int
     +dataPlantio: date
     +status: enum
     +pesoColhido: decimal
@@ -71,6 +73,8 @@ classDiagram
   
   class Tarefa {
     +idTarefa: int
+    +idUsuario: int
+    +idCanteiro: int
     +descricao: string
     +dataTarefa: date
     +horaInicio: time
@@ -81,10 +85,14 @@ classDiagram
   }
   
   class PlantioInsumo {
+    +idPlantio: int
+    +idInsumo: int
     +quantidadeUtilizada: decimal
   }
   
   class TarefaInsumo {
+    +idTarefa: int
+    +idInsumo: int
     +quantidadeUtilizada: decimal
   }
 
