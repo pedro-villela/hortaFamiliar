@@ -1,11 +1,15 @@
+> Equipe: Thaynara Franco, Guilherme Assunção, Adriana Martelli, Wilson Lau, Pedro Villela
+
+Segue o script DDL:
+
+```SQL
 -- schema.sql — Horta Familiar
--- Gera o schema completo em um banco vazio
 
-
--- Restrição de conflito de horários nos canteiros
+-- Restrição de conflito de horários requer a extensão btree_gist
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
-CREATE TABLE IF NOT EXISTS usuario (
+
+CREATE TABLE usuario (
     id_usuario SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
@@ -13,20 +17,20 @@ CREATE TABLE IF NOT EXISTS usuario (
     perfil VARCHAR(20) NOT NULL CHECK (perfil IN ('ADMIN', 'OPERACIONAL'))
 );
 
-CREATE TABLE IF NOT EXISTS cultura (
+CREATE TABLE cultura (
     id_cultura SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL UNIQUE,
     tempo_maturacao_dias INT NOT NULL CHECK (tempo_maturacao_dias > 0),
     espacamento_ideal DECIMAL(6,2) NOT NULL CHECK (espacamento_ideal > 0)
 );
 
-CREATE TABLE IF NOT EXISTS canteiro (
+CREATE TABLE canteiro (
     id_canteiro SERIAL PRIMARY KEY,
     identificacao VARCHAR(50) NOT NULL UNIQUE,
     area_m2 DECIMAL(8,2) NOT NULL CHECK (area_m2 > 0)
 );
 
-CREATE TABLE IF NOT EXISTS insumo (
+CREATE TABLE insumo (
     id_insumo SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('SEMENTE', 'FERTILIZANTE', 'FERRAMENTA')),
@@ -34,7 +38,7 @@ CREATE TABLE IF NOT EXISTS insumo (
     estoque_minimo DECIMAL(10,2) NOT NULL CHECK (estoque_minimo >= 0)
 );
 
-CREATE TABLE IF NOT EXISTS plantio (
+CREATE TABLE plantio (
     id_plantio SERIAL PRIMARY KEY,
     id_cultura INT NOT NULL REFERENCES cultura(id_cultura),
     id_canteiro INT NOT NULL REFERENCES canteiro(id_canteiro),
@@ -43,7 +47,7 @@ CREATE TABLE IF NOT EXISTS plantio (
     peso_colhido DECIMAL(10,2) CHECK (peso_colhido >= 0)
 );
 
-CREATE TABLE IF NOT EXISTS tarefa (
+CREATE TABLE tarefa (
     id_tarefa SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL REFERENCES usuario(id_usuario),
     id_canteiro INT REFERENCES canteiro(id_canteiro),
@@ -55,28 +59,21 @@ CREATE TABLE IF NOT EXISTS tarefa (
     CONSTRAINT chk_tarefa_horario CHECK (hora_fim > hora_inicio)
 );
 
-
--- Tabelas associativas
-
-CREATE TABLE IF NOT EXISTS plantio_insumo (
+CREATE TABLE plantio_insumo (
     id_plantio INT NOT NULL REFERENCES plantio(id_plantio),
     id_insumo INT NOT NULL REFERENCES insumo(id_insumo),
     quantidade_utilizada DECIMAL(10,2) NOT NULL CHECK (quantidade_utilizada > 0),
     PRIMARY KEY (id_plantio, id_insumo)
 );
 
-CREATE TABLE IF NOT EXISTS tarefa_insumo (
+CREATE TABLE tarefa_insumo (
     id_tarefa INT NOT NULL REFERENCES tarefa(id_tarefa),
     id_insumo INT NOT NULL REFERENCES insumo(id_insumo),
     quantidade_utilizada DECIMAL(10,2) NOT NULL CHECK (quantidade_utilizada > 0),
     PRIMARY KEY (id_tarefa, id_insumo)
 );
 
-
--- Regras de negócio e retrições
-
--- Restrição: Evitar conflitos de agendamento do mesmo canteiro no mesmo horário
-ALTER TABLE tarefa DROP CONSTRAINT IF EXISTS excl_tarefa_canteiro_conflito;
+-- Evitar conflitos de agendamento do mesmo canteiro no mesmo horário
 ALTER TABLE tarefa ADD CONSTRAINT excl_tarefa_canteiro_conflito
 EXCLUDE USING gist (
     id_canteiro WITH =,
@@ -87,45 +84,49 @@ EXCLUDE USING gist (
     ) WITH &&
 ) WHERE (id_canteiro IS NOT NULL AND status NOT IN ('CANCELADA'));
 
--- Função: Validar e baixar automaticamente o estoque na utilização
-CREATE OR REPLACE FUNCTION fn_baixa_estoque()
+-- Atualizar o estoque na utilização
+CREATE OR REPLACE FUNCTION fn_atualiza_estoque()
 RETURNS TRIGGER AS $$
-DECLARE
-    v_saldo DECIMAL(10,2);
-    v_nome VARCHAR(100);
 BEGIN
-    SELECT quantidade_estoque, nome
-      INTO v_saldo, v_nome
-      FROM insumo
-     WHERE id_insumo = NEW.id_insumo
-     FOR UPDATE;
 
-    IF v_saldo < NEW.quantidade_utilizada THEN
-        RAISE EXCEPTION 'Estoque insuficiente para o insumo "%": disponível %, solicitado %',
-            v_nome, v_saldo, NEW.quantidade_utilizada
-            USING ERRCODE = 'check_violation';
+    IF (TG_OP = 'DELETE' OR TG_OP = 'UPDATE') THEN
+        UPDATE insumo
+        SET quantidade_estoque = quantidade_estoque + OLD.quantidade_utilizada
+        WHERE id_insumo = OLD.id_insumo;
     END IF;
 
-    UPDATE insumo
-       SET quantidade_estoque = quantidade_estoque - NEW.quantidade_utilizada
-     WHERE id_insumo = NEW.id_insumo;
+    IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
+        UPDATE insumo
+        SET quantidade_estoque = quantidade_estoque - NEW.quantidade_utilizada
+        WHERE id_insumo = NEW.id_insumo;
+    END IF;
 
-    RETURN NEW;
+    IF (TG_OP = 'DELETE') THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers para execução da baixa
-DROP TRIGGER IF EXISTS trg_baixa_estoque_tarefa ON tarefa_insumo;
-CREATE TRIGGER trg_baixa_estoque_tarefa
-    BEFORE INSERT ON tarefa_insumo
-    FOR EACH ROW EXECUTE FUNCTION fn_baixa_estoque();
 
-DROP TRIGGER IF EXISTS trg_baixa_estoque_plantio ON plantio_insumo;
-CREATE TRIGGER trg_baixa_estoque_plantio
-    BEFORE INSERT ON plantio_insumo
-    FOR EACH ROW EXECUTE FUNCTION fn_baixa_estoque();
 
--- View: Dashboard de Produção
+
+
+CREATE TRIGGER trg_estoque_tarefa
+    AFTER INSERT OR UPDATE OR DELETE ON tarefa_insumo
+    FOR EACH ROW EXECUTE FUNCTION fn_atualiza_estoque();
+
+CREATE TRIGGER trg_estoque_plantio
+    AFTER INSERT OR UPDATE OR DELETE ON plantio_insumo
+    FOR EACH ROW EXECUTE FUNCTION fn_atualiza_estoque();
+
+
+
+
+
+
+-- Dashboard de Produção
 CREATE OR REPLACE VIEW vw_dashboard_producao AS
 SELECT
     c.nome AS cultura,
@@ -139,29 +140,25 @@ WHERE p.status = 'COLHIDO'
 GROUP BY c.nome, cn.identificacao;
 
 
--- Seed de exemplo
+-- Seed de Exemplo
 
 INSERT INTO usuario (nome, email, senha, perfil) VALUES
-('João Silva', 'joao.admin@horta.com', 'senha_hash_123', 'ADMIN'),
-('Maria Oliveira', 'maria.operacional@horta.com', 'senha_hash_456', 'OPERACIONAL')
-ON CONFLICT DO NOTHING;
+('João Silva', 'joao.admin@horta.com', 'hash_senha_123', 'ADMIN'),
+('Maria Oliveira', 'maria.operacional@horta.com', 'hash_senha_456', 'OPERACIONAL');
 
 INSERT INTO cultura (nome, tempo_maturacao_dias, espacamento_ideal) VALUES
 ('Alface Crespa', 45, 0.30),
 ('Tomate Cereja', 90, 0.60),
-('Cenoura', 60, 0.15)
-ON CONFLICT DO NOTHING;
+('Cenoura', 60, 0.15);
 
 INSERT INTO canteiro (identificacao, area_m2) VALUES
 ('Canteiro A - Sul', 15.50),
-('Canteiro B - Norte', 20.00)
-ON CONFLICT DO NOTHING;
+('Canteiro B - Norte', 20.00);
 
 INSERT INTO insumo (nome, tipo, quantidade_estoque, estoque_minimo) VALUES
 ('Semente de Alface (Pacote)', 'SEMENTE', 50.00, 10.00),
 ('Fertilizante NPK Orgânico (Kg)', 'FERTILIZANTE', 100.00, 20.00),
-('Enxada', 'FERRAMENTA', 5.00, 1.00)
-ON CONFLICT DO NOTHING;
+('Enxada', 'FERRAMENTA', 5.00, 1.00);
 
 INSERT INTO plantio (id_cultura, id_canteiro, data_plantio, status, peso_colhido) VALUES
 (1, 1, '2026-08-01', 'COLHIDO', 12.50),
@@ -176,3 +173,4 @@ INSERT INTO plantio_insumo (id_plantio, id_insumo, quantidade_utilizada) VALUES
 
 INSERT INTO tarefa_insumo (id_tarefa, id_insumo, quantidade_utilizada) VALUES
 (1, 2, 5.50);
+```
