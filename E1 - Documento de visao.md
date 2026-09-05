@@ -15,7 +15,9 @@ Os principais problemas estão relacionados à dificuldade para saber **quais cu
 
 Na ausência de um sistema integrado, o responsável pela horta precisa consultar diferentes registros e se comunicar manualmente com os demais membros para organizar as atividades. Isso pode gerar **retrabalho, perda de informações, atrasos nas tarefas, desperdício de insumos e dificuldades para analisar a produtividade da horta**.
 
----
+Para dimensionar o problema, considera-se como cenário de referência uma pequena horta administrada por 5 pessoas, contendo 10 canteiros, aproximadamente 8 culturas em diferentes estágios de produção, 20 tipos de insumos e uma média de 30 tarefas operacionais por semana, incluindo atividades de plantio, irrigação, adubação, manejo e colheita. Nesse cenário, o controle descentralizado exige o acompanhamento de dezenas de registros e atividades simultaneamente.
+
+Considerando ainda que cada tarefa possa exigir, em média, 3 minutos para consulta, conferência ou atualização manual de informações, somente o gerenciamento das 30 tarefas semanais representaria aproximadamente 90 minutos de trabalho administrativo por semana, ou cerca de 6 horas por mês. Além do tempo empregado, a ausência de validações automáticas de estoque e disponibilidade de recursos aumenta a possibilidade de conflitos de agendamento, falta de insumos e registros inconsistentes. Esses valores constituem uma estimativa inicial para dimensionamento do problema e deverão ser validados durante o desenvolvimento do projeto com usuários ou cenários de teste representativos
 
 ## 2. Público-alvo e perfis de usuário
 
