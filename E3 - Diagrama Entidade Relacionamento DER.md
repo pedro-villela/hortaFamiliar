@@ -3,7 +3,7 @@
 ## 1. Diagrama
 
 ```mermaid
-erDiagram
+derDiagram
 
     USUARIO ||--o{ TAREFA : "recebe"
 
