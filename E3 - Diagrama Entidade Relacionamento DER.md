@@ -3,7 +3,7 @@
 ## 1. Diagrama
 
 ```mermaid
-derDiagram
+erDiagram
 
     USUARIO ||--o{ TAREFA : "recebe"
 
@@ -15,11 +15,11 @@ derDiagram
 
     PLANTIO ||--o{ PLANTIO_INSUMO : "utiliza"
 
-    INSUMO ||--o{ PLANTIO_INSUMO : "é utilizado em"
+    INSUMO ||--o{ PLANTIO_INSUMO : "e utilizado em"
 
     TAREFA ||--o{ TAREFA_INSUMO : "utiliza"
 
-    INSUMO ||--o{ TAREFA_INSUMO : "é utilizado em"
+    INSUMO ||--o{ TAREFA_INSUMO : "e utilizado em"
 
     USUARIO {
         INT id_usuario PK
@@ -82,6 +82,7 @@ derDiagram
         DECIMAL quantidade_utilizada
     }
 ```
+
 
 ## 2. Dicionário de dados
 
