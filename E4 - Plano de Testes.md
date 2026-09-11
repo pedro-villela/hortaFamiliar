@@ -8,7 +8,7 @@ Os testes serão realizados de forma progressiva ao longo das sprints, priorizan
 
 | Tipo de teste    | O que cobre                                                                     | Ferramenta                                      | Quando roda                                      |
 | ---------------- | ------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ |
-| Unitário         | Regras de negócio e validações e backend                                        | Jest                                            | Durante o desenvolvimento de cada funcionalidade |
+| Unitário         | Regras de negócio e validações do backend                                        | Jest                                            | Durante o desenvolvimento de cada funcionalidade |
 | Integração       | Comunicação entre API, backend e banco de dados | Jest + Supertest + PostgreSQL | Após a implementação das funcionalidades        |
 | Manual/aceitação | Fluxos principais do sistema e comportamento apresentado ao usuário             | Navegador + ApiDog                              | Ao final de cada sprint e antes da entrega       |
 
