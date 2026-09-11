@@ -51,4 +51,4 @@ Falhas em funcionalidades secundárias ou melhorias não essenciais ao MVP poder
 
 Os casos apresentados representam o conjunto inicial de testes do MVP. Novos casos poderão ser acrescentados conforme novas funcionalidades forem implementadas ou quando uma falha identificada durante o desenvolvimento exigir um novo teste de regressão.
 
-As histórias classificadas como **Won't** no backlog não serão consideradas no plano inicial. A história **#14 — Aprovar tarefa sem estoque** poderá receber casos específicos caso seja implementada posteriormente.
+As histórias classificadas como **Won't** no backlog não serão consideradas no plano inicial. 
