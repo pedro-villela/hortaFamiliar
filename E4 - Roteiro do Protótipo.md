@@ -16,24 +16,24 @@ usuário classificadas como MUST no backlog da E2.
 
 | Tela | Perfil | História | Finalidade |
 |---|---|---|---|
-| Login | Ambos | #1 | Autenticação no sistema |
-| Cadastro | Ambos | #1 | Cadastro de usuário |
-| Dashboard | Administrador | #12 | Indicadores da horta |
-| Culturas | Administrador | #2 | Gerenciamento de culturas |
-| Nova Cultura | Administrador | #2 | Cadastro de cultura |
-| Canteiros | Administrador | #3 | Gerenciamento dos canteiros |
-| Insumos | Administrador | #4 e #10 | Estoque e disponibilidade |
-| Plantios | Administrador | #5 | Visualização dos plantios |
-| Novo Plantio | Administrador | #5 | Registro de plantio |
-| Tarefas | Administrador | #6 | Gerenciamento das tarefas |
-| Nova Tarefa | Administrador | #6, #10 e #11 | Criação e validação de tarefa |
-| Validação de Recursos | Administrador | #10 e #11 | Verificação de disponibilidade |
-| Conflito de Recursos | Administrador | #10 e #11 | Bloqueio de agendamento inválido |
-| Minhas Tarefas | Membro | #7 | Consulta das tarefas atribuídas |
-| Detalhes da Tarefa | Membro | #7 e #8 | Informações da tarefa |
-| Conclusão da Tarefa | Membro | #8 | Registro da conclusão |
-| Utilização de Insumos | Administrador | #9 | Registro e baixa de insumos |
-| Relatórios/Produção | Administrador | #12 | Indicadores de produtividade |
+| Login | Ambos | 1 | Autenticação no sistema |
+| Cadastro | Ambos | 1 | Cadastro de usuário |
+| Dashboard | Administrador | 12 | Indicadores da horta |
+| Culturas | Administrador | 2 | Gerenciamento de culturas |
+| Nova Cultura | Administrador | 2 | Cadastro de cultura |
+| Canteiros | Administrador | 3 | Gerenciamento dos canteiros |
+| Insumos | Administrador | 4 e 10 | Estoque e disponibilidade |
+| Plantios | Administrador | 5 | Visualização dos plantios |
+| Novo Plantio | Administrador | 5 | Registro de plantio |
+| Tarefas | Administrador | 6 | Gerenciamento das tarefas |
+| Nova Tarefa | Administrador | 6, 10 e 11 | Criação e validação de tarefa |
+| Validação de Recursos | Administrador | 10 e 11 | Verificação de disponibilidade |
+| Conflito de Recursos | Administrador | 10 e 11 | Bloqueio de agendamento inválido |
+| Minhas Tarefas | Membro | 7 | Consulta das tarefas atribuídas |
+| Detalhes da Tarefa | Membro | 7 e 8 | Informações da tarefa |
+| Conclusão da Tarefa | Membro | 8 | Registro da conclusão |
+| Utilização de Insumos | Administrador | 9 | Registro e baixa de insumos |
+| Relatórios/Produção | Administrador | 12 | Indicadores de produtividade |
 
 ## Fluxo do Administrador
 
