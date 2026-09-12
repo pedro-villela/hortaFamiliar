@@ -2,7 +2,7 @@
 
 ## Link do protótipo
 
-Acesse o protótipo navegável desenvolvido no Figma:
+Acesse o protótipo navegável:
 https://www.figma.com/design/lYMIWu8soPKOgnPf2xPAvb/Horta-Familiar---Prot%C3%B3tipo-E4?node-id=1-5&t=EK92hXyrcmaBS07h-1
 
 
