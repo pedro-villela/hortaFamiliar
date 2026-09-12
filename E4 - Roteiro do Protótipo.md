@@ -3,7 +3,7 @@
 ## Link do protótipo
 
 Acesse o protótipo navegável:
-https://www.figma.com/design/lYMIWu8soPKOgnPf2xPAvb/Horta-Familiar---Prot%C3%B3tipo-E4?node-id=1-5&t=EK92hXyrcmaBS07h-1
+[https://www.figma.com/design/lYMIWu8soPKOgnPf2xPAvb/Horta-Familiar---Prot%C3%B3tipo-E4?node-id=1-5&t=EK92hXyrcmaBS07h-1](https://design.penpot.app/#/view?file-id=c514c1fb-1cda-8125-8008-a03514f73fc4&page-id=c514c1fb-1cda-8125-8008-a03514f73fc5&section=interactions&index=0&share-id=7aaad0c1-e5ed-4ae1-ac8b-10582a0bdd03)
 
 
 ## Objetivo
