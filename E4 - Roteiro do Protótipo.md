@@ -4,7 +4,7 @@
 
 Acesse o protótipo navegável desenvolvido no Figma:
 
-[Protótipo Horta Familiar - Figma](COLE-AQUI-O-LINK-DO-FIGMA)
+[[Protótipo Horta Familiar - Figma](COLE-AQUI-O-LINK-DO-FIGMA)](https://www.figma.com/design/lYMIWu8soPKOgnPf2xPAvb/Horta-Familiar---Prot%C3%B3tipo-E4?node-id=1-5&t=EK92hXyrcmaBS07h-1)
 
 ## Objetivo
 
