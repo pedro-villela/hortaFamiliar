@@ -1,0 +1,1 @@
+// Funções de validação reutilizadas pelas rotas.
