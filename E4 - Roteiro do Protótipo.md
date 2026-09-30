@@ -3,7 +3,7 @@
 ## Link do protótipo
 
 Acesse o protótipo navegável:
-[!Prototipo](https://design.penpot.app/#/view?file-id=c514c1fb-1cda-8125-8008-a03514f73fc4&page-id=bed98bed-6467-80b3-8008-a0dea1bb676a&section=interactions&frame-id=7320864b-df74-8014-8008-a4072415cee9&index=0&share-id=c2516c12-6006-47f7-b641-c111e9154dd1)
+[Prototipo](https://design.penpot.app/#/view?file-id=c514c1fb-1cda-8125-8008-a03514f73fc4&page-id=bed98bed-6467-80b3-8008-a0dea1bb676a&section=interactions&frame-id=7320864b-df74-8014-8008-a4072415cee9&index=0&share-id=c2516c12-6006-47f7-b641-c111e9154dd1)
 
 ## Objetivo
 
