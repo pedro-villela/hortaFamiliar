@@ -1,5 +1,5 @@
 
--- schema.sql — Horta Familiar
+-- Horta Familiar
 
 -- Restrição de conflito de horários requer a extensão btree_gist
 CREATE EXTENSION IF NOT EXISTS btree_gist;
