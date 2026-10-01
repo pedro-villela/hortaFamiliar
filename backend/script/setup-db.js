@@ -39,7 +39,7 @@ async function main() {
     }
     const jaTemTabelas = await client.query("SELECT to_regclass('public.usuario') AS t");
     if (jaTemTabelas.rows[0].t) {
-        console.log('Tabelas já existem. Nada a fazer.');
+        console.log('Tabelas já existem.');
     } else {
         const sql = fs.readFileSync(path.join(__dirname, '..', '..', 'database', 'schema.sql'), 'utf8');
         await client.query(sql);
