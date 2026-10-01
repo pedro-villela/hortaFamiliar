@@ -27,12 +27,15 @@ const SELECT_PLANTIO = `
 
 // GET /api/plantios
 router.get('/', async (req, res) => {
-
+    const { rows } = await db.query(`${SELECT_PLANTIO} ORDER BY p.data_plantio DESC, p.id_plantio DESC`);
+    res.json(rows);
 });
 
 // GET /api/plantios/:id
 router.get('/:id', async (req, res) => {
-
+    const { rows } = await db.query(`${SELECT_PLANTIO} WHERE p.id_plantio = $1`, [idDaRota(req)]);
+    if (rows.length === 0) throw new ErroHttp(404, 'Plantio não encontrado.');
+    res.json(rows[0]);
 });
 
 // POST /api/plantios — ***somente ADMIN***
@@ -47,7 +50,14 @@ router.put('/:id', autorizar('ADMIN'), async (req, res) => {
 
 // DELETE /api/plantios/:id — ***somente ADMIN***
 router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
-
+    try {
+        const { rowCount } = await db.query('DELETE FROM plantio WHERE id_plantio = $1', [idDaRota(req)]);
+        if (rowCount === 0) throw new ErroHttp(404, 'Plantio não encontrado.');
+        res.status(204).end();
+    } catch (err) {
+        if (err.code === '23503') throw new ErroHttp(409, 'Não é possível plantio que possui insumos vinculados.');
+        throw err;
+    }
 });
 
 module.exports = router;

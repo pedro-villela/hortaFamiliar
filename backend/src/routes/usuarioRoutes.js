@@ -15,9 +15,13 @@ router.get('/', async (req, res) => {
     res.json(rows);
 });
 
-// POST /api/usuarios — cria usuário
+// POST /api/usuarios
 router.post('/', async (req, res) => {
-
+    const nome = texto(req.body.nome, 'nome', 100);
+    const email = validarEmail(req.body.email);
+    const senha = validarSenha(req.body.senha);
+    const perfil = opcao(req.body.perfil, 'perfil', ['ADMIN', 'OPERACIONAL']);
+    const hash = await bcrypt.hash(senha, 10);
 });
 
 module.exports = router;

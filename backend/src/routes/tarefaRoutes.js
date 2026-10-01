@@ -10,7 +10,7 @@ router.use(autenticar);
 
 const STATUS = ['PENDENTE', 'CONCLUIDA', 'CANCELADA'];
 
-// Tarefa com nome do responsável e "local" (identificação do canteiro).
+// Tarefa com nome do responsável.
 const SELECT_TAREFA = `
     SELECT t.id_tarefa, t.id_usuario, u.nome AS responsavel,
            t.id_canteiro, cn.identificacao AS local,
@@ -31,7 +31,11 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
 
 // GET /api/tarefas 
 router.get('/', autorizar('ADMIN'), async (req, res) => {
-
+    const { rows } = await db.query(
+        `${SELECT_TAREFA} WHERE ($1::text IS NULL OR t.status = $1) ORDER BY t.data_tarefa, t.hora_inicio`,
+        [filtroStatus(req)]
+    );
+    res.json(rows);
 });
 
 // GET /api/tarefas/minhas
