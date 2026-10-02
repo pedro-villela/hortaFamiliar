@@ -1,12 +1,23 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API do projeto Horta Familiar",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "db:setup": "node script/setup-db.js",
+    "db:seed": "node script/seed-db.js",
+    "test": "echo \"Testes ainda não implementados\""
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
+  }
 }
