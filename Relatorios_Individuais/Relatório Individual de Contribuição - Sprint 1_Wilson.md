@@ -6,7 +6,7 @@
 
 | Item                                                                                       | PR/commit                                                                                                                                                      | Status    |
 | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| Implementação da estrutura inicial do backend da aplicação                                 | [`4a549de`](https://github.com/pedro-villela/hortaFamiliar/commit/4a549de28f04cb682e8a2189dc84e33382b2773) — **Implementar funcionalidades das Sprints 1 e 2** | Concluído |
+| Implementação da estrutura inicial do backend da aplicação | [`35033fc`](https://github.com/pedro-villela/hortaFamiliar/commit/35033fc) | Concluído |
 | Implementação do cadastro e login de usuários, com validação de e-mail e senha             | [`4a549de`](https://github.com/pedro-villela/hortaFamiliar/commit/4a549de28f04cb682e8a2189dc84e33382b2773)                                                     | Concluído |
 | Implementação da autenticação e autorização dos usuários utilizando JWT e perfis de acesso | [`4a549de`](https://github.com/pedro-villela/hortaFamiliar/commit/4a549de28f04cb682e8a2189dc84e33382b2773)                                                     | Concluído |
 | Implementação das funcionalidades de gerenciamento de culturas                             | [`4a549de`](https://github.com/pedro-villela/hortaFamiliar/commit/4a549de28f04cb682e8a2189dc84e33382b2773)                                                     | Concluído |
