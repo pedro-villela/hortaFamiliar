@@ -8,7 +8,7 @@
     "start": "node src/server.js",
     "db:setup": "node script/setup-db.js",
     "db:seed": "node script/seed-db.js",
-    "test": "echo \"Testes ainda não implementados\""
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +19,9 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }
