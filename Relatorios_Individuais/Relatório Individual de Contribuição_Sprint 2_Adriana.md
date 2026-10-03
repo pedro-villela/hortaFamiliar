@@ -34,19 +34,8 @@ Também contribuí de forma indireta com as **evidências de teste**, acompanhan
 **Observações:**  
 Participei da construção e revisão da Ata de Retrospectiva da Sprint 2, incluindo ajustes no conteúdo, nas responsabilidades da equipe e na organização do documento em Markdown.
 
-## 3. PRs de colegas que revisei
 
-> Preencher somente se houve revisão formal de PRs de outros integrantes.
-
-| PR | Autor | Comentário resumido |
-|---|---|---|
-| [preencher, se houver] | [autor] | [comentário ou sugestão realizada] |
-
-Caso não tenha ocorrido revisão formal de PRs de colegas nesta sprint:
-
-> Nesta sprint, não realizei revisão formal de Pull Requests de outros integrantes.
-
-## 4. Dificuldades e o que aprendi
+## 3. Dificuldades e o que aprendi
 
 Nesta sprint, um dos principais aprendizados foi compreender melhor o fluxo de trabalho colaborativo no GitHub. Ao organizar meu próprio histórico, consegui perceber de forma mais clara a relação entre **commits, branches, Pull Requests e a integração das alterações na branch `main`**. Isso me ajudou a entender que uma contribuição não deve ser apenas realizada, mas também registrada de maneira organizada e rastreável.
 
@@ -90,15 +79,13 @@ Esse entendimento foi especialmente importante porque o relatório individual pr
 
 Como pontos de melhoria para as próximas sprints, pretendo:
 
-- criar commits menores e com mensagens mais claras;
 - relacionar cada tarefa executada aos respectivos commits ou PRs;
-- acompanhar mais de perto os Pull Requests e revisões da equipe;
 - registrar as evidências de teste no mesmo momento em que forem executadas;
 - continuar estudando a estrutura de banco de dados por meio do código e dos scripts desenvolvidos pela equipe;
 - participar cada vez mais das discussões técnicas, mesmo nas áreas em que eu não seja a responsável direta;
 - manter a documentação atualizada durante o desenvolvimento, evitando concentrar os ajustes apenas próximo à entrega.
 
-## 5. Evidências principais no GitHub
+## 4. Evidências principais no GitHub
 
 ### Commits confirmados na `main`
 
