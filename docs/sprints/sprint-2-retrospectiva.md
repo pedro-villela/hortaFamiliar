@@ -75,7 +75,7 @@
 | Padronizar a estrutura de diretórios e arquivos do repositório para evitar a criação desnecessária de pastas e manter uma organização única para todos os integrantes. | a definir |
 | Revisar o fluxo de utilização do GitHub e estabelecer um padrão para commits, branches e organização das alterações realizadas no projeto. | a definir |
 | Manter as reuniões semanais de acompanhamento das atividades e registrar os principais impedimentos encontrados durante a sprint. | Toda a equipe |
-| Continuar a implementação dos testes automatizados utilizando Jest e Supertest e verificar se os casos de teste previstos no Plano de Testes possuem evidências de execução. | [a definir] |
+| Continuar a implementação dos testes automatizados utilizando Jest e Supertest e verificar se os casos de teste previstos no Plano de Testes possuem evidências de execução. | a definir |
 | Executar os testes por meio do `npm test` antes da finalização das funcionalidades desenvolvidas na sprint. | a definir |
 | Revisar as regras de autenticação e autorização para garantir que os diferentes perfis de usuário tenham acesso somente às funcionalidades previstas nos requisitos. | a definir |
 | Revisar as consultas SQL envolvendo relacionamentos entre usuários, canteiros, plantios e tarefas, verificando o tratamento de registros inexistentes e referências inválidas. | a definir |
