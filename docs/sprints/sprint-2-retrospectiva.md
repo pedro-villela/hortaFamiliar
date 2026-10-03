@@ -1,4 +1,4 @@
-```markdown
+
 # Ata de Retrospectiva — Sprint 2 — Horta Familiar
 
 **Data:** 02/10/2026  
