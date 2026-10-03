@@ -1,4 +1,4 @@
-# Relatório Individual de Contribuição — Sprint 2 — Wilson Lau Júnior (RA [2840482423013])
+# Relatório Individual de Contribuição — Sprint 2 — Wilson Lau Júnior (RA 2840482423013)
 
 **Papel nesta sprint:** Desenvolvimento / Backend
 
