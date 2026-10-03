@@ -72,13 +72,13 @@
 | Ação | Responsável |
 |---|---|
 | Realizar uma leitura conjunta das orientações da próxima sprint antes da divisão e início das tarefas, registrando as dúvidas identificadas antes da implementação. | Toda a equipe |
-| Padronizar a estrutura de diretórios e arquivos do repositório para evitar a criação desnecessária de pastas e manter uma organização única para todos os integrantes. | [Nome do responsável] + equipe |
-| Revisar o fluxo de utilização do GitHub e estabelecer um padrão para commits, branches e organização das alterações realizadas no projeto. | [Nome do responsável] |
+| Padronizar a estrutura de diretórios e arquivos do repositório para evitar a criação desnecessária de pastas e manter uma organização única para todos os integrantes. | a definir |
+| Revisar o fluxo de utilização do GitHub e estabelecer um padrão para commits, branches e organização das alterações realizadas no projeto. | a definir |
 | Manter as reuniões semanais de acompanhamento das atividades e registrar os principais impedimentos encontrados durante a sprint. | Toda a equipe |
-| Continuar a implementação dos testes automatizados utilizando Jest e Supertest e verificar se os casos de teste previstos no Plano de Testes possuem evidências de execução. | [Nome do responsável pelos testes] |
-| Executar os testes por meio do `npm test` antes da finalização das funcionalidades desenvolvidas na sprint. | Integrante responsável pela funcionalidade |
-| Revisar as regras de autenticação e autorização para garantir que os diferentes perfis de usuário tenham acesso somente às funcionalidades previstas nos requisitos. | [Nome do responsável pelo backend] |
-| Revisar as consultas SQL envolvendo relacionamentos entre usuários, canteiros, plantios e tarefas, verificando o tratamento de registros inexistentes e referências inválidas. | [Nome do responsável pelo banco/backend] |
+| Continuar a implementação dos testes automatizados utilizando Jest e Supertest e verificar se os casos de teste previstos no Plano de Testes possuem evidências de execução. | a definir |
+| Executar os testes por meio do `npm test` antes da finalização das funcionalidades desenvolvidas na sprint. | a definir |
+| Revisar as regras de autenticação e autorização para garantir que os diferentes perfis de usuário tenham acesso somente às funcionalidades previstas nos requisitos. | a definir |
+| Revisar as consultas SQL envolvendo relacionamentos entre usuários, canteiros, plantios e tarefas, verificando o tratamento de registros inexistentes e referências inválidas. | a definir |
 | Documentar dificuldades técnicas e respectivas soluções encontradas durante a sprint, permitindo que o conhecimento adquirido seja compartilhado entre os integrantes. | Toda a equipe |
 | Realizar uma revisão coletiva das evidências e documentos antes da entrega da próxima sprint, verificando se todos os itens solicitados pelo professor foram atendidos. | Toda a equipe |
 ```
