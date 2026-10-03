@@ -1,6 +1,6 @@
 # Documento de Visão — Projeto Horta Familiar
 
-**Equipe:** Thaynara Franco (2840482423001), Guilherme Assunção (2840482423014), Adriana Martelli (2840482423026), Wilson Lau (2840482423013), Pedro Villela (2840482423009)  
+**Equipe:** Adriana Martelli (RA 2840482423026), Guilherme Assunção (RA 2840482423014), Pedro Villela (RA 2840482423009), Thaynara Franco (RA 2840482423001), Wilson Lau (RA 2840482423013)
 **Trilha:** B  
 **Origem do problema:** Banco de Temas nº 10  
 **Data:** 21/08/2026  

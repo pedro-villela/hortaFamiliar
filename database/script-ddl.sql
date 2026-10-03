@@ -1,9 +1,6 @@
-> Equipe: Thaynara Franco, Guilherme Assunção, Adriana Martelli, Wilson Lau, Pedro Villela
-
-Segue o script DDL:
+-- script-ddl.ql - Horta Familiar
 
 ```SQL
--- schema.sql — Horta Familiar
 
 -- Restrição de conflito de horários requer a extensão btree_gist
 CREATE EXTENSION IF NOT EXISTS btree_gist;

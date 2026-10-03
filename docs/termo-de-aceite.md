@@ -1,6 +1,6 @@
 # Termo de Aceite do Projeto — Horta Familiar
 
-**Equipe:** Thaynara Franco (RA 2840482423001), Guilherme Assunção (RA 2840482423014), Adriana Martelli (RA 2840482423026), Wilson Lau (RA 2840482423013), Pedro Villela (RA 2840482423009)
+**Equipe:** Adriana Martelli (RA 2840482423026), Guilherme Assunção (RA 2840482423014), Pedro Villela (RA 2840482423009), Thaynara Franco (RA 2840482423001), Wilson Lau (RA 2840482423013)
 **Trilha:** B
 **Origem:** Banco de Temas nº 10
 **Data:** 28/08/2026
@@ -33,11 +33,11 @@
 ## 4. Papéis iniciais da equipe (Sprint 1)
 | Integrante         | Papel Principal                        |
 | ------------------ | -------------------------------------- |
-| Wilson Lau         | Product Owner (Gestão de Requisitos)   |
-| Thaynara Franco    | Scrum Master / Facilitador             |
 | Adriana Martelli   | Desenvolvedora Frontend / UI           |
 | Guilherme Assunção | Desenvolvedor Backend / Banco de Dados |
 | Pedro Villela      | Analista de Qualidade / Deploy         |
+| Thaynara Franco    | Scrum Master / Facilitador             |
+| Wilson Lau         | Product Owner (Gestão de Requisitos)   |
 
 ## 5. Aprovação
 - Professor:
