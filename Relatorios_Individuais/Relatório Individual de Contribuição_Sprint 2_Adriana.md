@@ -37,11 +37,9 @@ Participei da construção e revisão da Ata de Retrospectiva da Sprint 2, inclu
 
 ## 3. Dificuldades e o que aprendi
 
-Nesta sprint, um dos principais aprendizados foi compreender melhor o fluxo de trabalho colaborativo no GitHub. Ao organizar meu próprio histórico, consegui perceber de forma mais clara a relação entre **commits, branches, Pull Requests e a integração das alterações na branch `main`**. Isso me ajudou a entender que uma contribuição não deve ser apenas realizada, mas também registrada de maneira organizada e rastreável.
+Nesta sprint, um dos principais aprendizados foi compreender melhor o fluxo de trabalho colaborativo no GitHub. Ao organizar meu próprio histórico, consegui perceber de forma mais clara a relação entre commits, branches, Pull Requests e a integração das alterações na branch `main`. Isso me ajudou a entender que uma contribuição não deve ser apenas realizada, mas também registrada de maneira organizada e rastreável.
 
-Também aprendi mais sobre a importância da documentação dentro do processo de desenvolvimento de software. Durante a criação e reorganização da pasta `docs`, a elaboração da retrospectiva e os ajustes nos arquivos em Markdown, percebi que a documentação precisa acompanhar a evolução do projeto e não deve ser tratada apenas como uma etapa final. A clareza dos documentos influencia diretamente a organização da equipe e a capacidade de demonstrar o que foi realizado.
-
-Outro aprendizado relevante foi relacionado aos **testes automatizados e às evidências de teste**. Mesmo sem atuar diretamente como principal responsável pela implementação, acompanhei a estrutura dos testes desenvolvidos pela equipe e contribuí indiretamente para a organização das evidências.
+Outro aprendizado relevante foi relacionado aos testes automatizados e às evidências de teste. Mesmo sem atuar diretamente como principal responsável pela implementação, acompanhei a estrutura dos testes desenvolvidos pela equipe e contribuí indiretamente para a organização das evidências.
 
 Esse processo me ajudou a compreender melhor a diferença entre:
 
@@ -50,9 +48,7 @@ Esse processo me ajudou a compreender melhor a diferença entre:
 - testes automatizados;
 - evidências de execução.
 
-Também passei a entender melhor o papel de ferramentas como **Jest e Supertest**, além da necessidade de registrar os resultados de forma verificável por meio de arquivos de teste, logs, prints ou execuções automatizadas.
-
-Ao acompanhar a organização dos casos de teste, percebi que a evidência não é apenas afirmar que uma funcionalidade funcionou, mas demonstrar de forma objetiva:
+Também passei a entender melhor o papel de ferramentas como Jest e Supertest, além da necessidade de registrar os resultados de forma verificável por meio de arquivos de teste, logs, prints ou execuções automatizadas. Ao acompanhar a organização dos casos de teste, percebi que a evidência não é apenas afirmar que uma funcionalidade funcionou, mas demonstrar de forma objetiva:
 
 - o que foi testado;
 - qual era o resultado esperado;
@@ -61,19 +57,13 @@ Ao acompanhar a organização dos casos de teste, percebi que a evidência não 
 
 Esse aprendizado foi importante para entender melhor como qualidade de software, documentação e desenvolvimento estão relacionados.
 
-Também tive um aprendizado importante em **Banco de Dados**. Embora eu não tenha trabalhado diretamente na implementação do banco nesta sprint, procurei acompanhar o código desenvolvido pelos colegas de equipe.
+Também tive um aprendizado importante em Banco de Dados. Embora eu não tenha trabalhado diretamente na implementação do banco nesta sprint, procurei acompanhar o código desenvolvido pelos colegas de equipe. Observando os scripts, a estrutura das tabelas, os relacionamentos e a forma como os dados eram utilizados pelo sistema, consegui compreender melhor como o banco se integra às demais camadas da aplicação. Esse acompanhamento me ajudou a relacionar conteúdos estudados em sala de aula com uma aplicação real do projeto. Consegui entender melhor como o modelo de dados deixa de ser apenas um diagrama e passa a representar tabelas, chaves, relacionamentos e regras que sustentam as funcionalidades do sistema.
 
-Observando os scripts, a estrutura das tabelas, os relacionamentos e a forma como os dados eram utilizados pelo sistema, consegui compreender melhor como o banco se integra às demais camadas da aplicação.
-
-Esse acompanhamento me ajudou a relacionar conteúdos estudados em sala de aula com uma aplicação real do projeto. Consegui entender melhor como o modelo de dados deixa de ser apenas um diagrama e passa a representar tabelas, chaves, relacionamentos e regras que sustentam as funcionalidades do sistema.
-
-Mesmo sem ter sido responsável pela codificação dessa parte, acompanhar o trabalho dos colegas ampliou minha visão sobre a arquitetura do projeto e sobre a dependência existente entre **banco de dados, backend e regras de negócio**.
-
-Outro ponto importante foi perceber que o aprendizado dentro de um projeto em equipe não ocorre apenas nas tarefas que cada integrante executa diretamente. A leitura do código dos colegas, a revisão de documentos, as discussões sobre problemas e a observação das soluções adotadas também contribuíram para o meu desenvolvimento técnico.
+Mesmo sem ter sido responsável pela codificação dessa parte, acompanhar o trabalho dos colegas ampliou minha visão sobre a arquitetura do projeto e sobre a dependência existente entre banco de dados, backend e regras de negócio.
 
 Ao longo da sprint, passei a compreender melhor a importância da rastreabilidade entre:
 
-**atividade realizada → commit ou PR → arquivo ou funcionalidade alterada → teste → evidência**
+atividade realizada → commit ou PR → arquivo ou funcionalidade alterada → teste → evidência
 
 Esse entendimento foi especialmente importante porque o relatório individual precisa demonstrar a contribuição real de cada integrante e será comparado com o histórico do GitHub e com a avaliação por pares.
 
@@ -108,7 +98,7 @@ Como pontos de melhoria para as próximas sprints, pretendo:
 
 ## 6. Síntese da contribuição
 
-Minha contribuição nesta sprint concentrou-se principalmente na **documentação do projeto, organização dos artefatos da sprint, revisão da retrospectiva, atualização de informações relacionadas ao protótipo e apoio indireto às evidências de teste**.
+Minha contribuição nesta sprint concentrou-se principalmente na documentação do projeto, organização dos artefatos da sprint, revisão da retrospectiva, atualização de informações relacionadas ao protótipo e apoio indireto às evidências de teste.
 
 Além das atividades diretamente realizadas, a sprint também representou um período importante de aprendizado. Ao acompanhar o trabalho dos colegas, consegui ampliar minha compreensão sobre testes automatizados e Banco de Dados, mesmo sem ser a responsável direta por essas implementações.
 
