@@ -20,6 +20,10 @@ flowchart LR
   Membro --> UC11[Visualizar minhas tarefas]
   Membro --> UC12[Registrar conclusão de tarefa]
   UC6 -.include.-> UC13[Validar estoque e conflitos de recursos]
+  UC10 -.extend.-> UC6
+  UC7 -.extend.-> UC5
+  UC7 -.extend.-> UC12
+  UC10 -.->|<<extend>>| UC6
 ```
 
 ## 2. Diagrama de Classes
