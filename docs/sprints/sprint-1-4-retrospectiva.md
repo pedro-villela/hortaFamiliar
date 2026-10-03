@@ -1,7 +1,7 @@
 
-# Ata de Retrospectiva — Sprint 1 a 8 — Horta Familiar
+# Ata de Retrospectiva — Sprint 1 a 4 — Horta Familiar
 
-**Data:** 21/08/2026 a 02/10/2026
+**Data:** 21/08/2026 a 11/09/2026
 **Presentes:** Adriana Martelli (RA 2840482423026), Guilherme Assunção (RA 2840482423014), Pedro Villela (RA 2840482423009), Thaynara Franco (RA 2840482423001), Wilson Lau (RA 2840482423013)
 
 ---
