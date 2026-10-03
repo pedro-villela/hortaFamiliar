@@ -5,10 +5,10 @@
 ## 1. O que fiz
 | Item | PR/commit | Status |
 |---|---|---|
-| Delimitação do escopo e definição do MVP (Fora de escopo) | Reunião de Alinhamento | Concluído |
-| Levantamento das entidades principais (Usuário, Cultura, etc.) | Reunião de Alinhamento | Concluído |
-| Definição do cenário de referência para dimensionamento | Reunião de Alinhamento | Concluído |
-| Triagem e descarte de funcionalidades complexas (ex: IoT, mobile) | Discussão de Escopo | Concluído |
+| Delimitação do escopo e definição do MVP (Fora de escopo) | Reunião | Concluído |
+| Levantamento das entidades principais (Usuário, Cultura, etc.) | Reunião | Concluído |
+| Definição do cenário de referência para dimensionamento | Reunião | Concluído |
+| Triagem e descarte de funcionalidades complexas (ex: IoT, mobile) | Reunião | Concluído |
 
 ## 2. Rituais que participei
 - [x] Dailies/weeklies
@@ -33,11 +33,11 @@ A principal dificuldade foi definir e isolar o que era realmente essencial para 
 
 | Item | PR/commit | Status | 
 | --- | --- | --- | 
-| Criação completa do Diagrama Entidade Relacionamento (DER) | Arquivo DER | Concluído | 
-| Padronização e correção de nomenclatura de atributos entre MER, DER e DDL | Revisão de Documentação | Concluído | 
-| Ajuste de partes do código que não atendiam aos requisitos da sprint | Revisão de Código | Concluído | 
-| Padronização e formatação do documento final de entrega | Formatação | Concluído | 
-| Desenvolvimento em par (pair programming) do Script DDL | Arquivo DDL | Concluído | 
+| Criação completa do Diagrama Entidade Relacionamento (DER) | add | Concluído | 
+| Padronização e correção de nomenclatura de atributos entre MER, DER e DDL | add | Concluído | 
+| Ajuste de partes do código que não atendiam aos requisitos da sprint | add | Concluído | 
+| Padronização e formatação do documento final de entrega | add | Concluído | 
+| Desenvolvimento do Script DDL | add | Concluído | 
 
 ## 2. Rituais que participei
 
@@ -51,7 +51,7 @@ A principal dificuldade foi definir e isolar o que era realmente essencial para 
 
 | PR / Documento | Autor | Comentário resumido | 
 | --- | --- | --- | 
-| Script DDL (schema.sql) | Guilherme Assunção | Revisei o script para corrigir inconsistências de nomes de atributos e entidades, garantindo que o DDL refletisse exatamente o que foi definido no MER e no DER. | 
+| Script DDL | Guilherme Assunção | Revisei o script para corrigir inconsistências de nomes de atributos e entidades, garantindo que o DDL refletisse exatamente o que foi definido no MER e no DER | 
 
 ## 4. Dificuldades e o que aprendi
 
