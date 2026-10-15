@@ -1,5 +1,7 @@
 # Plano de Testes — Horta Familiar
 
+**Equipe:** Adriana Martelli (RA 2840482423026), Guilherme Assunção (RA 2840482423014), Pedro Villela (RA 2840482423009), Thaynara Franco (RA 2840482423001), Wilson Lau (RA 2840482423013)
+
 ## 1. Estratégia
 
 O plano de testes tem como objetivo verificar o funcionamento das principais funcionalidades do sistema Horta Familiar, com foco nas regras de negócio, validações e integração entre aplicação e banco de dados.
