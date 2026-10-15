@@ -2,7 +2,7 @@
 
 Sistema web para gerenciamento de uma horta familiar, permitindo o cadastro e autenticação de usuários, gestão de culturas, canteiros e insumos, acompanhamento de plantios, agendamento de tarefas, controle de estoque e visualização de indicadores de produtividade.
 
-**Deploy:** ainda não publicado
+**Deploy:** ainda não publicado  
 **Equipe:** Thaynara Franco (RA 2840482423001) — Guilherme Assunção (RA 2840482423014) — Adriana Martelli (RA 2840482423026) — Wilson Lau (RA 2840482423013) — Pedro Villela (RA 2840482423009) · Laboratório de Engenharia de Software · ADS Fatec Ribeirão Preto
 
 ## Stack
@@ -18,7 +18,7 @@ Sistema web para gerenciamento de uma horta familiar, permitindo o cadastro e au
 - Git
 
 ### Passo a passo
-1. Clone o repositório: `github.com/pedro-villela/hortaFamiliar`
+1. Clone o repositório: `git clone https://github.com/pedro-villela/hortaFamiliar`
 2. Entre nas pastas do projeto e instale as dependências:
    - Frontend: `cd frontend && npm install`
    - Backend: `cd backend && npm install`
@@ -37,10 +37,28 @@ Sistema web para gerenciamento de uma horta familiar, permitindo o cadastro e au
    - Frontend: `npm run dev`
 7. Acesse em `http://localhost:5173`
 
+### Comandos documentados por pasta
+
+#### Backend (`/backend`)
+| Comando | Descrição |
+|---|---|
+| `npm start` | Inicia o servidor em modo de produção |
+| `npm run dev` | Inicia o servidor backend em modo de desenvolvimento |
+| `npm test` | Executa a suíte de testes do backend |
+| `npm run db:setup` | Cria o banco de dados e executa a carga do schema |
+| `npm run db:migrate` | Executa as migrations e popula dados iniciais (seeds) |
+
+#### Frontend (`/frontend`)
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Inicia a aplicação frontend em ambiente de desenvolvimento (Vite) |
+| `npm run build` | Gera os arquivos otimizados para produção |
+| `npm run preview` | Executa localmente o build gerado de produção |
+
 ## Estrutura do repositório
 ```text
+/backend        — API e regras de negócio desenvolvidas em Node.js (com package.json e scripts)
 /frontend       — aplicação web desenvolvida em React + Vite
-/backend        — API e regras de negócio desenvolvidas em Node.js
 /database       — scripts, schema e migrations do PostgreSQL
 /docs           — documentação do projeto
 /tests          — testes automatizados
