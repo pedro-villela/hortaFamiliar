@@ -6,13 +6,16 @@
 
 | Item                                                                                       | PR/commit                                                                                                                                                      | Status    |
 | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| | | Concluído |
-| | | Concluído |
-| | | Concluído |
-| | | Concluído |
-| | | Concluído |
+| Estrutura inicial do backend: pastas (config, routes, middlewares, utils), server.js, app.js (separado do listen para permitir testes) e rota de verificação GET / e GET /saude| | Concluído |
+|Configuração do PostgreSQL: config/database.js (Pool do pg), database/schema.sql (DDL da E3), scripts npm run db:setup e npm run db:seed (seed com senhas em bcrypt) e .env.example. Substitui os dados temporários que existiam em culturaRoutes.js| | Concluído |
+|CRUD de culturas (/api/culturas) com validação de campos obrigatórios e bloqueio de nome duplicado | | Concluído |
+|CRUD de canteiros (/api/canteiros) com identificação única e validação de área | | Concluído |
+|CRUD de insumos (/api/insumos) para sementes, fertilizantes e ferramentas, rejeitando quantidades negativas | | Concluído |
 | | | Concluído |
 | | | Concluído |
 
 
 ## Dificuldades e o que aprendi
+Como conectar uma API Express a um banco PostgreSQL e usar consultas parametrizadas para evitar SQL Injection.
+Que as constraints do banco funcionam como uma segunda camada de validação, e que a API pode traduzir os códigos de erro do PostgreSQL.
+A escrever testes de integração contra um banco de dados real, usando um banco separado (*_test) para não apagar os dados de desenvolvimento.
