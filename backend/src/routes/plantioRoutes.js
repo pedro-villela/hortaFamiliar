@@ -11,6 +11,7 @@ const {
 
 const {
     ErroHttp,
+    numeroPositivo,
     inteiroPositivo,
     data,
     opcao,
@@ -56,6 +57,24 @@ function lerPlantio(body) {
             'peso_colhido'
         )
     };
+}
+
+// Valida a lista e soma linhas repetidas do mesmo insumo.
+function lerInsumos(body) {
+    const entrada = body.insumos === undefined ? [] : body.insumos;
+    if (!Array.isArray(entrada)) throw new ErroHttp(400, 'O campo "insumos" deve ser uma lista.');
+    const agregados = new Map();
+    for (const item of entrada) {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) {
+            throw new ErroHttp(400, 'Cada insumo deve conter id_insumo e quantidade.');
+        }
+        const id_insumo = inteiroPositivo(item.id_insumo, 'id_insumo');
+        const quantidade = numeroPositivo(item.quantidade, 'quantidade');
+        agregados.set(id_insumo, (agregados.get(id_insumo) || 0) + quantidade);
+    }
+    return [...agregados.entries()]
+        .map(([id_insumo, quantidade]) => ({ id_insumo, quantidade }))
+        .sort((a, b) => a.id_insumo - b.id_insumo);
 }
 
 function erroDeReferencia(err) {
@@ -119,69 +138,47 @@ router.get('/:id', async (req, res) => {
 // POST /api/plantios — somente ADMIN
 router.post('/', autorizar('ADMIN'), async (req, res) => {
     const dados = lerPlantio(req.body);
-    const insumosReq = req.body.insumos || []; // Array de insumos vindo do front-end
-
+    const insumosReq = lerInsumos(req.body);
     const client = await db.pool.connect();
+    let transacaoIniciada = false;
 
     try {
-        await client.query('BEGIN'); 
+        await client.query('BEGIN');
+        transacaoIniciada = true;
 
-        // VALIDAÇÃO DE ESTOQUE E ALERTAS DE MÍNIMO 
+        const ids = insumosReq.map(item => item.id_insumo);
+        const estoqueRows = ids.length
+            ? await client.query(
+                `SELECT id_insumo, nome, tipo, quantidade_estoque, estoque_minimo
+                 FROM insumo WHERE id_insumo = ANY($1::int[])
+                 ORDER BY id_insumo FOR UPDATE`, [ids])
+            : { rows: [] };
+        const estoquePorId = new Map(estoqueRows.rows.map(row => [row.id_insumo, row]));
         const alertas = [];
-        
+
         for (const item of insumosReq) {
-            const resInsumo = await client.query(
-                'SELECT nome, quantidade_estoque, estoque_minimo FROM insumo WHERE id_insumo = $1',
-                [item.id_insumo]
-            );
-
-            if (resInsumo.rows.length === 0) {
-                throw new ErroHttp(404, `Insumo ID ${item.id_insumo} não encontrado.`);
+            const estoque = estoquePorId.get(item.id_insumo);
+            if (!estoque) throw new ErroHttp(404, `Insumo ID ${item.id_insumo} não encontrado.`);
+            if (estoque.tipo === 'FERRAMENTA') {
+                throw new ErroHttp(400, ` '${estoque.nome}' é uma ferramenta reutilizável e não pode ser registrada como consumível do plantio. Registre ferramentas como reserva de tarefa.`);
             }
-
-            const insumoBanco = resInsumo.rows[0];
-
-            if (item.quantidade > insumoBanco.quantidade_estoque) {
-                throw new ErroHttp(400, `Estoque insuficiente para o insumo: ${insumoBanco.nome}. Disponível: ${insumoBanco.quantidade_estoque}.`);
+            if (item.quantidade > estoque.quantidade_estoque) {
+                throw new ErroHttp(400, `Estoque insuficiente para '${estoque.nome}'. Disponível: ${estoque.quantidade_estoque}; solicitado: ${item.quantidade}.`);
             }
-
-            if ((insumoBanco.quantidade_estoque - item.quantidade) < insumoBanco.estoque_minimo) {
-                alertas.push(`Atenção: O estoque de '${insumoBanco.nome}' atingirá um nível abaixo do mínimo após este plantio.`);
+            if ((estoque.quantidade_estoque - item.quantidade) < estoque.estoque_minimo) {
+                alertas.push(`Atenção: o estoque de '${estoque.nome}' ficará abaixo do mínimo após este plantio.`);
             }
         }
 
-        // GRAVAÇÃO DO PLANTIO 
         const resPlantio = await client.query(
-            `INSERT INTO plantio
-                (
-                    id_cultura,
-                    id_canteiro,
-                    data_plantio,
-                    status,
-                    peso_colhido
-                )
-             VALUES
-                ($1, $2, $3, $4, $5)
-             RETURNING
-                id_plantio,
-                id_cultura,
-                id_canteiro,
-                data_plantio,
-                status,
-                peso_colhido`,
-            [
-                dados.id_cultura,
-                dados.id_canteiro,
-                dados.data_plantio,
-                dados.status,
-                dados.peso_colhido
-            ]
+            `INSERT INTO plantio (id_cultura, id_canteiro, data_plantio, status, peso_colhido)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id_plantio, id_cultura, id_canteiro, data_plantio, status, peso_colhido`,
+            [dados.id_cultura, dados.id_canteiro, dados.data_plantio, dados.status, dados.peso_colhido]
         );
-
         const novoPlantio = resPlantio.rows[0];
 
-        
-        // REGISTRAR UTILIZAÇÃO E REDUZIR ESTOQUE NO PLANTIO
+        // O gatilho fn_atualiza_estoque desconta o consumível automaticamente.
         for (const item of insumosReq) {
             await client.query(
                 `INSERT INTO plantio_insumo (id_plantio, id_insumo, quantidade_utilizada)
@@ -190,17 +187,16 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
             );
         }
 
-        await client.query('COMMIT'); 
-
+        await client.query('COMMIT');
+        transacaoIniciada = false;
         res.status(201).json({
             mensagem: 'Plantio registrado com sucesso.',
             plantio: novoPlantio,
-            alertas: alertas.length > 0 ? alertas : undefined
+            alertas: alertas.length ? alertas : undefined
         });
-
     } catch (err) {
-        await client.query('ROLLBACK'); 
-        erroDeReferencia(err); 
+        if (transacaoIniciada) await client.query('ROLLBACK');
+        erroDeReferencia(err);
     } finally {
         client.release();
     }
@@ -286,4 +282,5 @@ router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
 });
 
 module.exports = router;
+
 
