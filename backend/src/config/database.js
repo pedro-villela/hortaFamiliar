@@ -14,14 +14,13 @@ function montarConfig() {
     }
 
     return {
-        host: process.env.DB_HOST || 'localhost',
+        host: process.env.HOST || 'localhost',
         port: Number(process.env.DB_PORT) || 5432,
-        database: process.env.DB_NAME,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD
+        database: process.env.NAME,
+        user: process.env.USER,
+        password: process.env.PASSWORD
     };
 }
-
 const pool = new Pool(montarConfig());
 
 module.exports = {
