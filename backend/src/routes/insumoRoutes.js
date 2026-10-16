@@ -169,7 +169,7 @@ router.put('/:id', autorizar('ADMIN'), async (req, res) => {
     res.json(rows[0]);
 });
 
-// Excluir insumo.
+ // Excluir insumo.
 router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
     const id = idDaRota(req);
 
@@ -190,3 +190,4 @@ router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
 });
 
 module.exports = router;
+
