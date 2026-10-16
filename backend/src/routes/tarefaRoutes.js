@@ -138,9 +138,63 @@ function tratarErroBanco(err) {
 // Somente ADMIN pode criar e atribuir tarefas.
 router.post('/', autorizar('ADMIN'), async (req, res) => {
     const dados = lerTarefa(req.body);
+    const insumosReq = req.body.insumos || []; 
+
+    const client = await db.pool.connect(); 
 
     try {
-        const { rows } = await db.query(
+        await client.query('BEGIN'); // Inicia a transação.
+
+        // IDENTIFICAR CONFLITOS DE RECURSOS (FERRAMENTAS)
+        if (insumosReq.length > 0) {
+            const idsInsumos = insumosReq.map(i => i.id_insumo);
+            
+            const conflito = await client.query(`
+                SELECT t.id_tarefa, i.nome
+                FROM tarefa t
+                JOIN tarefa_insumo ti ON ti.id_tarefa = t.id_tarefa
+                JOIN insumo i ON i.id_insumo = ti.id_insumo
+                WHERE i.tipo = 'FERRAMENTA'
+                  AND ti.id_insumo = ANY($1::int[])
+                  AND t.data_tarefa = $2
+                  AND t.hora_inicio < $4 
+                  AND t.hora_fim > $3
+                  AND t.status != 'CANCELADA'
+            `, [idsInsumos, dados.data_tarefa, dados.hora_inicio, dados.hora_fim]);
+
+            if (conflito.rows.length > 0) {
+                throw new ErroHttp(409, `Conflito de agendamento: A ferramenta '${conflito.rows[0].nome}' já está reservada neste horário (Tarefa #${conflito.rows[0].id_tarefa}).`);
+            }
+        }
+
+        // VALIDAÇÃO DE ESTOQUE E ALERTAS DE MÍNIMO
+        const alertas = [];
+        
+        for (const item of insumosReq) {
+            const resInsumo = await client.query(
+                'SELECT nome, quantidade_estoque, estoque_minimo FROM insumo WHERE id_insumo = $1',
+                [item.id_insumo]
+            );
+
+            if (resInsumo.rows.length === 0) {
+                throw new ErroHttp(404, `Insumo ID ${item.id_insumo} não encontrado.`);
+            }
+
+            const insumoBanco = resInsumo.rows[0];
+
+            // Bloqueia se não houver saldo suficiente.
+            if (item.quantidade > insumoBanco.quantidade_estoque) {
+                throw new ErroHttp(400, `Estoque insuficiente para o insumo: ${insumoBanco.nome}. Disponível: ${insumoBanco.quantidade_estoque}.`);
+            }
+
+            // Gera alerta se o uso deixar o estoque abaixo do mínimo.
+            if ((insumoBanco.quantidade_estoque - item.quantidade) < insumoBanco.estoque_minimo) {
+                alertas.push(`Atenção: O estoque de '${insumoBanco.nome}' atingirá um nível abaixo do mínimo após esta tarefa.`);
+            }
+        }
+
+        // Grava a tarefa 
+        const resTarefa = await client.query(
             `INSERT INTO tarefa
                 (
                     id_usuario,
@@ -174,10 +228,31 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
             ]
         );
 
-        res.status(201).json(rows[0]);
+        const novaTarefa = resTarefa.rows[0];
+
+        // REGISTRAR UTILIZAÇÃO E REDUZIR ESTOQUE
+        for (const item of insumosReq) {
+            await client.query(
+                `INSERT INTO tarefa_insumo (id_tarefa, id_insumo, quantidade_utilizada)
+                 VALUES ($1, $2, $3)`,
+                [novaTarefa.id_tarefa, item.id_insumo, item.quantidade]
+            );
+        }
+
+        await client.query('COMMIT'); 
+
+        // Retorna a tarefa criada e embute os alertas no JSON.
+        res.status(201).json({
+            mensagem: 'Tarefa agendada com sucesso.',
+            tarefa: novaTarefa,
+            alertas: alertas.length > 0 ? alertas : undefined
+        });
 
     } catch (err) {
-        tratarErroBanco(err);
+        await client.query('ROLLBACK'); 
+        tratarErroBanco(err); // Trata conflito de canteiro.
+    } finally {
+        client.release();
     }
 });
 
