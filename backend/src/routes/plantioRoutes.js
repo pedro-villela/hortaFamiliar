@@ -119,9 +119,39 @@ router.get('/:id', async (req, res) => {
 // POST /api/plantios — somente ADMIN
 router.post('/', autorizar('ADMIN'), async (req, res) => {
     const dados = lerPlantio(req.body);
+    const insumosReq = req.body.insumos || []; // Array de insumos vindo do front-end
+
+    const client = await db.pool.connect();
 
     try {
-        const { rows } = await db.query(
+        await client.query('BEGIN'); 
+
+        // VALIDAÇÃO DE ESTOQUE E ALERTAS DE MÍNIMO 
+        const alertas = [];
+        
+        for (const item of insumosReq) {
+            const resInsumo = await client.query(
+                'SELECT nome, quantidade_estoque, estoque_minimo FROM insumo WHERE id_insumo = $1',
+                [item.id_insumo]
+            );
+
+            if (resInsumo.rows.length === 0) {
+                throw new ErroHttp(404, `Insumo ID ${item.id_insumo} não encontrado.`);
+            }
+
+            const insumoBanco = resInsumo.rows[0];
+
+            if (item.quantidade > insumoBanco.quantidade_estoque) {
+                throw new ErroHttp(400, `Estoque insuficiente para o insumo: ${insumoBanco.nome}. Disponível: ${insumoBanco.quantidade_estoque}.`);
+            }
+
+            if ((insumoBanco.quantidade_estoque - item.quantidade) < insumoBanco.estoque_minimo) {
+                alertas.push(`Atenção: O estoque de '${insumoBanco.nome}' atingirá um nível abaixo do mínimo após este plantio.`);
+            }
+        }
+
+        // GRAVAÇÃO DO PLANTIO 
+        const resPlantio = await client.query(
             `INSERT INTO plantio
                 (
                     id_cultura,
@@ -148,10 +178,31 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
             ]
         );
 
-        res.status(201).json(rows[0]);
+        const novoPlantio = resPlantio.rows[0];
+
+        
+        // REGISTRAR UTILIZAÇÃO E REDUZIR ESTOQUE NO PLANTIO
+        for (const item of insumosReq) {
+            await client.query(
+                `INSERT INTO plantio_insumo (id_plantio, id_insumo, quantidade_utilizada)
+                 VALUES ($1, $2, $3)`,
+                [novoPlantio.id_plantio, item.id_insumo, item.quantidade]
+            );
+        }
+
+        await client.query('COMMIT'); 
+
+        res.status(201).json({
+            mensagem: 'Plantio registrado com sucesso.',
+            plantio: novoPlantio,
+            alertas: alertas.length > 0 ? alertas : undefined
+        });
 
     } catch (err) {
-        erroDeReferencia(err);
+        await client.query('ROLLBACK'); 
+        erroDeReferencia(err); 
+    } finally {
+        client.release();
     }
 });
 
