@@ -1,18 +1,9 @@
 // Rotas de canteiros.
 
 const express = require('express');
-
 const db = require('../config/database');
-
 const { autenticar, autorizar } = require('../middlewares/auth');
-
-const {
-    ErroHttp,
-    texto,
-    numeroPositivo,
-    idDaRota
-} = require('../utils/validacao');
-
+const {ErroHttp, texto, numeroPositivo, idDaRota } = require('../utils/validacao');
 const router = express.Router();
 
 router.use(autenticar);
@@ -23,16 +14,8 @@ router.use(autenticar);
 
 function lerCanteiro(body) {
     return {
-        identificacao: texto(
-            body.identificacao,
-            'identificacao',
-            50
-        ),
-
-        area_m2: numeroPositivo(
-            body.area_m2,
-            'area_m2'
-        )
+        identificacao: texto(body.identificacao, 'identificacao', 50),
+        area_m2: numeroPositivo( body.area_m2, 'area_m2' )
     };
 }
 
@@ -40,7 +23,6 @@ function lerCanteiro(body) {
 // LISTAR CANTEIROS
 // GET /api/canteiros
 // ============================================================
-
 router.get('/', async (req, res) => {
     const { rows } = await db.query(
         `SELECT id_canteiro, identificacao, area_m2
@@ -55,24 +37,15 @@ router.get('/', async (req, res) => {
 // BUSCAR CANTEIRO POR ID
 // GET /api/canteiros/:id
 // ============================================================
-
 router.get('/:id', async (req, res) => {
-    const id = idDaRota(req);
-
     const { rows } = await db.query(
         `SELECT id_canteiro, identificacao, area_m2
          FROM canteiro
          WHERE id_canteiro = $1`,
-        [id]
+        [idDaRota(req)]
     );
 
-    if (rows.length === 0) {
-        throw new ErroHttp(
-            404,
-            'Canteiro não encontrado.'
-        );
-    }
-
+    if (rows.length === 0) throw new ErroHttp( 404, 'Canteiro não encontrado.' );
     res.json(rows[0]);
 });
 

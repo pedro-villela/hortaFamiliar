@@ -1,22 +1,9 @@
 // Rotas de insumos.
 
 const express = require('express');
-
 const db = require('../config/database');
-
-const {
-    autenticar,
-    autorizar
-} = require('../middlewares/auth');
-
-const {
-    ErroHttp,
-    texto,
-    numeroNaoNegativo,
-    opcao,
-    idDaRota
-} = require('../utils/validacao');
-
+const { autenticar, autorizar} = require('../middlewares/auth');
+const {ErroHttp,texto,numeroNaoNegativo,opcao,idDaRota} = require('../utils/validacao');
 const router = express.Router();
 
 router.use(autenticar);
@@ -29,27 +16,10 @@ const TIPOS_INSUMO = [
 
 function lerInsumo(body) {
     return {
-        nome: texto(
-            body.nome,
-            'nome',
-            100
-        ),
-
-        tipo: opcao(
-            body.tipo,
-            'tipo',
-            TIPOS_INSUMO
-        ),
-
-        quantidade_estoque: numeroNaoNegativo(
-            body.quantidade_estoque,
-            'quantidade_estoque'
-        ),
-
-        estoque_minimo: numeroNaoNegativo(
-            body.estoque_minimo,
-            'estoque_minimo'
-        )
+        nome: texto(body.nome, 'nome', 100),
+        tipo: opcao(body.tipo, 'tipo', TIPOS_INSUMO),
+        quantidade_estoque: numeroNaoNegativo(body.quantidade_estoque,'quantidade_estoque'),
+        estoque_minimo: numeroNaoNegativo(body.estoque_minimo,'estoque_minimo')
     };
 }
 
@@ -71,8 +41,6 @@ router.get('/', async (req, res) => {
 
 // Buscar um insumo pelo ID.
 router.get('/:id', async (req, res) => {
-    const id = idDaRota(req);
-
     const { rows } = await db.query(
         `SELECT
             id_insumo,
@@ -82,16 +50,10 @@ router.get('/:id', async (req, res) => {
             estoque_minimo
          FROM insumo
          WHERE id_insumo = $1`,
-        [id]
+        [idDaRota(req)]
     );
 
-    if (rows.length === 0) {
-        throw new ErroHttp(
-            404,
-            'Insumo não encontrado.'
-        );
-    }
-
+    if (rows.length === 0) throw new ErroHttp( 404, 'Insumo não encontrado.' );
     res.json(rows[0]);
 });
 
@@ -145,43 +107,27 @@ router.put('/:id', autorizar('ADMIN'), async (req, res) => {
             tipo,
             quantidade_estoque,
             estoque_minimo`,
-        [
-            dados.nome,
-            dados.tipo,
-            dados.quantidade_estoque,
-            dados.estoque_minimo,
-            id
-        ]
+        [dados.nome,
+         dados.tipo,
+         dados.quantidade_estoque,
+         dados.estoque_minimo,
+         id]
     );
 
-    if (rows.length === 0) {
-        throw new ErroHttp(
-            404,
-            'Insumo não encontrado.'
-        );
-    }
-
+    if (rows.length === 0) throw new ErroHttp(404, 'Insumo não encontrado.' );
     res.json(rows[0]);
 });
 
 // Excluir insumo.
 router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
-    const id = idDaRota(req);
-
-    const { rowCount } = await db.query(
-        `DELETE FROM insumo
-         WHERE id_insumo = $1`,
-        [id]
-    );
-
-    if (rowCount === 0) {
-        throw new ErroHttp(
-            404,
-            'Insumo não encontrado.'
-        );
+    try {
+        const { rowCount } = await db.query('DELETE FROM insumo WHERE id_insumo = $1', [idDaRota(req)]);
+        if (rowCount === 0) throw new ErroHttp(404, 'Insumo não encontrado.');
+        res.status(204).end();
+    } catch (err) {
+        if (err.code === '23503') throw new ErroHttp(409, 'Não é possível excluir: o insumo já foi utilizado em plantios ou tarefas.');
+        throw err;
     }
-
-    res.status(204).end();
 });
 
 module.exports = router;

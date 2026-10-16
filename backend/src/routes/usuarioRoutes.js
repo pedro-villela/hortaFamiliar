@@ -75,19 +75,9 @@ router.get('/:id', async (req, res) => {
 // POST /api/usuarios
 router.post('/', async (req, res, next) => {
     try {
-        const nome = texto(
-            req.body.nome,
-            'nome',
-            100
-        );
-
-        const email = validarEmail(
-            req.body.email
-        );
-
-        const senha = validarSenha(
-            req.body.senha
-        );
+        const nome = texto(req.body.nome,'nome',100);
+        const email = validarEmail(req.body.email);
+        const senha = validarSenha(req.body.senha);
 
         const perfil = opcao(
             req.body.perfil,
@@ -95,11 +85,7 @@ router.post('/', async (req, res, next) => {
             ['ADMIN', 'OPERACIONAL']
         );
 
-        const senhaHash = await bcrypt.hash(
-            senha,
-            10
-        );
-
+        const senhaHash = await bcrypt.hash(senha, 10 );
         const { rows } = await db.query(
             `INSERT INTO usuario
                 (nome, email, senha, perfil)
@@ -110,12 +96,7 @@ router.post('/', async (req, res, next) => {
                 nome,
                 email,
                 perfil`,
-            [
-                nome,
-                email,
-                senhaHash,
-                perfil
-            ]
+            [nome, email, senhaHash,perfil]
         );
 
         res.status(201).json({
@@ -125,12 +106,7 @@ router.post('/', async (req, res, next) => {
 
     } catch (erro) {
         if (erro.code === '23505') {
-            return next(
-                new ErroHttp(
-                    409,
-                    'E-mail já cadastrado.'
-                )
-            );
+            return next(new ErroHttp(409,'E-mail já cadastrado.'));
         }
 
         next(erro);

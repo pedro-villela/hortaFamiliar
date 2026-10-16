@@ -1,71 +1,32 @@
 // Rotas de plantios.
-
 const express = require('express');
-
 const db = require('../config/database');
-
-const {
-    autenticar,
-    autorizar
-} = require('../middlewares/auth');
-
-const {
-    ErroHttp,
-    inteiroPositivo,
-    data,
-    opcao,
-    numeroNaoNegativo,
-    idDaRota
-} = require('../utils/validacao');
+const { autenticar, autorizar } = require('../middlewares/auth');
+const {ErroHttp,inteiroPositivo,data,opcao,numeroNaoNegativo,idDaRota} = require('../utils/validacao');
 
 const router = express.Router();
 
 router.use(autenticar);
 
-const STATUS = [
-    'CRESCIMENTO',
-    'COLHIDO',
-    'PERDIDO'
-];
+const STATUS = ['CRESCIMENTO','COLHIDO','PERDIDO'];
 
 function lerPlantio(body) {
     return {
-        id_cultura: inteiroPositivo(
-            body.id_cultura,
-            'id_cultura'
-        ),
-
-        id_canteiro: inteiroPositivo(
-            body.id_canteiro,
-            'id_canteiro'
-        ),
-
-        data_plantio: data(
-            body.data_plantio,
-            'data_plantio'
-        ),
-
-        status: opcao(
-            body.status,
-            'status',
-            STATUS
-        ),
-
-        peso_colhido: numeroNaoNegativo(
-            body.peso_colhido,
-            'peso_colhido'
-        )
+        id_cultura: inteiroPositivo( body.id_cultura, 'id_cultura' ),
+        id_canteiro: inteiroPositivo( body.id_canteiro, 'id_canteiro'),
+        data_plantio: data( body.data_plantio, 'data_plantio' ),
+        status: body.status === undefined ? 'CRESCIMENTO' : opcao(body.status, 'status', STATUS),
+        peso_colhido: body.peso_colhido === undefined || body.peso_colhido === null
+                    ? null
+                    : numeroNaoNegativo(body.peso_colhido, 'peso_colhido')
     };
 }
 
 function erroDeReferencia(err) {
     if (err.code === '23503') {
-        throw new ErroHttp(
-            400,
-            'A cultura ou o canteiro informado não existe.'
-        );
+        if (err.constraint === 'plantio_id_cultura_fkey') return new ErroHttp(400, 'Cultura informada não existe.');
+        if (err.constraint === 'plantio_id_canteiro_fkey') return new ErroHttp(400, 'Canteiro informado não existe.');
     }
-
     throw err;
 }
 
@@ -88,31 +49,16 @@ const SELECT_PLANTIO = `
 
 // GET /api/plantios
 router.get('/', async (req, res) => {
-    const { rows } = await db.query(
-        `${SELECT_PLANTIO}
-         ORDER BY p.data_plantio DESC, p.id_plantio DESC`
-    );
-
+    const { rows } = await db.query(`${SELECT_PLANTIO} ORDER BY p.data_plantio DESC, p.id_plantio DESC`);
     res.json(rows);
 });
 
 // GET /api/plantios/:id
 router.get('/:id', async (req, res) => {
     const id = idDaRota(req);
+    const { rows } = await db.query(`${SELECT_PLANTIO} WHERE p.id_plantio = $1`, [id]);
 
-    const { rows } = await db.query(
-        `${SELECT_PLANTIO}
-         WHERE p.id_plantio = $1`,
-        [id]
-    );
-
-    if (rows.length === 0) {
-        throw new ErroHttp(
-            404,
-            'Plantio não encontrado.'
-        );
-    }
-
+    if (rows.length === 0) throw new ErroHttp( 404,'Plantio não encontrado.');
     res.json(rows[0]);
 });
 
@@ -120,7 +66,6 @@ router.get('/:id', async (req, res) => {
 router.post('/', autorizar('ADMIN'), async (req, res) => {
     const dados = lerPlantio(req.body);
     const insumosReq = req.body.insumos || []; // Array de insumos vindo do front-end
-
     const client = await db.pool.connect();
 
     try {
@@ -238,13 +183,7 @@ router.put('/:id', autorizar('ADMIN'), async (req, res) => {
             ]
         );
 
-        if (rows.length === 0) {
-            throw new ErroHttp(
-                404,
-                'Plantio não encontrado.'
-            );
-        }
-
+        if (rows.length === 0) throw new ErroHttp(404,'Plantio não encontrado.');
         res.json(rows[0]);
 
     } catch (err) {
@@ -263,13 +202,8 @@ router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
             [id]
         );
 
-        if (rowCount === 0) {
-            throw new ErroHttp(
-                404,
-                'Plantio não encontrado.'
-            );
-        }
-
+        if (rowCount === 0) throw new ErroHttp( 404, 'Plantio não encontrado.');
+    
         res.status(204).end();
 
     } catch (err) {

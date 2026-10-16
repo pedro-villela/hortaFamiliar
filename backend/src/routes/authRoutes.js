@@ -1,19 +1,9 @@
 // Rotas de autenticação.
-
 const express = require('express');
 const bcrypt = require('bcryptjs');
-
 const db = require('../config/database');
-
-const {
-    gerarToken,
-    autenticar
-} = require('../middlewares/auth');
-
-const {
-    ErroHttp,
-    texto
-} = require('../utils/validacao');
+const { gerarToken, autenticar } = require('../middlewares/auth');
+const {ErroHttp, texto} = require('../utils/validacao');
 
 const router = express.Router();
 
@@ -24,19 +14,9 @@ const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // ============================================================
 
 function validarSenha(senha) {
-
-    if (
-        typeof senha !== 'string' ||
-        senha.length < 8 ||
-        !/[A-Za-z]/.test(senha) ||
-        !/\d/.test(senha)
-    ) {
-        throw new ErroHttp(
-            400,
-            'A senha precisa ter no mínimo 8 caracteres, entre letras e números.'
-        );
+    if ( typeof senha !== 'string' || senha.length < 8 || !/[A-Za-z]/.test(senha) || !/\d/.test(senha)) {
+        throw new ErroHttp( 400, 'A senha precisa ter no mínimo 8 caracteres, entre letras e números.');
     }
-
     return senha;
 }
 
@@ -45,20 +25,9 @@ function validarSenha(senha) {
 // ============================================================
 
 function validarEmail(email) {
+    const valor = texto( email, 'email', 150 ).toLowerCase();
 
-    const valor = texto(
-        email,
-        'email',
-        150
-    ).toLowerCase();
-
-    if (!REGEX_EMAIL.test(valor)) {
-        throw new ErroHttp(
-            400,
-            'E-mail inválido.'
-        );
-    }
-
+    if (!REGEX_EMAIL.test(valor)) { throw new ErroHttp( 400, 'E-mail inválido.'); }
     return valor;
 }
 
@@ -66,85 +35,26 @@ function validarEmail(email) {
 // REGISTRO
 // POST /api/auth/registro
 // ============================================================
-
 router.post('/registro', async (req, res, next) => {
-
     try {
-
-        const {
-            nome,
-            email,
-            senha
-        } = req.body;
-
-        const nomeValido = texto(
-            nome,
-            'nome',
-            100
-        );
-
-        const emailValido = validarEmail(email);
-
-        validarSenha(senha);
-
-        // Verifica se o e-mail já está cadastrado.
-        const usuarioExistente = await db.query(
-            `SELECT id_usuario
-             FROM usuario
-             WHERE email = $1`,
-            [emailValido]
-        );
-
-        if (usuarioExistente.rows.length > 0) {
-            throw new ErroHttp(
-                409,
-                'E-mail já cadastrado.'
-            );
-        }
-
+        const nome = texto(req.body.nome, 'nome', 100);
+        const email = validarEmail(req.body.email);
+        const senha = validarSenha(req.body.senha);
+        
         // A senha nunca é armazenada em texto puro.
-        const senhaHash = await bcrypt.hash(
-            senha,
-            10
+        const hash = await bcrypt.hash(senha, 10);
+        
+        const { rows } = await db.query(
+            `INSERT INTO usuario (nome, email, senha, perfil) VALUES ($1, $2, $3, 'OPERACIONAL')
+             RETURNING id_usuario, nome, email, perfil`,
+            [nome, email, hash]
         );
+        
+        res.status(201).json(rows[0]);
 
-        // Todo cadastro público começa como OPERACIONAL.
-        // O perfil ADMIN deve ser definido administrativamente.
-        const resultado = await db.query(
-            `INSERT INTO usuario
-                (nome, email, senha, perfil)
-             VALUES
-                ($1, $2, $3, 'OPERACIONAL')
-             RETURNING
-                id_usuario,
-                nome,
-                email,
-                perfil`,
-            [
-                nomeValido,
-                emailValido,
-                senhaHash
-            ]
-        );
-
-        res.status(201).json({
-            mensagem: 'Usuário cadastrado com sucesso.',
-            usuario: resultado.rows[0]
-        });
-
-    } catch (erro) {
-
-        // E-mail UNIQUE no PostgreSQL.
-        if (erro.code === '23505') {
-            return next(
-                new ErroHttp(
-                    409,
-                    'E-mail já cadastrado.'
-                )
-            );
-        }
-
-        next(erro);
+    } catch (err) {
+        if (err.code === '23505') { return next(new ErroHttp(409, 'E-mail já cadastrado.')); }
+        next(err);
     }
 });
 
@@ -154,20 +64,12 @@ router.post('/registro', async (req, res, next) => {
 // ============================================================
 
 router.post('/login', async (req, res, next) => {
-
     try {
-
-        const {
-            email,
-            senha
-        } = req.body;
-
-        const emailValido = validarEmail(email);
-
-        validarSenha(senha);
+        const email = texto(req.body.email, 'email').toLowerCase();
+        const senha = texto(req.body.senha, 'senha');
 
         // Busca o usuário pelo e-mail.
-        const resultado = await db.query(
+        const select = await db.query(
             `SELECT
                 id_usuario,
                 nome,
@@ -176,47 +78,22 @@ router.post('/login', async (req, res, next) => {
                 perfil
              FROM usuario
              WHERE email = $1`,
-            [emailValido]
+            [email]
         );
 
-        if (resultado.rows.length === 0) {
-            throw new ErroHttp(
-                401,
-                'E-mail ou senha inválidos.'
-            );
-        }
-
-        const usuario = resultado.rows[0];
-
+        const usuario = select.rows[0];
+        
         // Compara a senha informada com o hash
-        // armazenado no PostgreSQL.
-        const senhaCorreta = await bcrypt.compare(
-            senha,
-            usuario.senha
-        );
-
-        if (!senhaCorreta) {
-            throw new ErroHttp(
-                401,
-                'E-mail ou senha inválidos.'
-            );
+        if (!usuario || !(bcrypt.compare( senha, usuario.senha ))) {
+            throw new ErroHttp( 401, 'E-mail ou senha inválidos.' );
         }
 
-        const usuarioToken = {
-            id_usuario: usuario.id_usuario,
-            nome: usuario.nome,
-            email: usuario.email,
-            perfil: usuario.perfil
-        };
-
-        const token = gerarToken(
-            usuarioToken
-        );
+        const token = gerarToken(usuario);
 
         res.json({
             mensagem: 'Login realizado com sucesso.',
-            token,
-            usuario: usuarioToken
+            token: token,
+            usuario: { id_usuario: usuario.id_usuario, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil }
         });
 
     } catch (erro) {
@@ -228,20 +105,17 @@ router.post('/login', async (req, res, next) => {
 // USUÁRIO AUTENTICADO
 // GET /api/auth/me
 // ============================================================
-
-router.get(
-    '/me',
-    autenticar,
-    async (req, res) => {
-
-        res.json({
-            usuario: req.usuario
-        });
-    }
-);
+router.get('/me', autenticar, async (req, res) => {
+    const { rows } = await db.query(
+        'SELECT id_usuario, nome, email, perfil FROM usuario WHERE id_usuario = $1', 
+        [req.usuario.id_usuario]
+    );
+    
+    if (rows.length === 0) throw new ErroHttp(401, 'Usuário não existe mais.');
+    res.json(rows[0]);
+});
 
 module.exports = router;
-
 module.exports.validarSenha = validarSenha;
 module.exports.validarEmail = validarEmail;
 

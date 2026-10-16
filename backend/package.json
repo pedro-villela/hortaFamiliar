@@ -10,6 +10,11 @@
     "db:seed": "node script/seed-db.js",
     "test": "jest"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "globalSetup": "./tests/globalSetup.js",
+    "setupFiles": ["./tests/setupEnv.js"]
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

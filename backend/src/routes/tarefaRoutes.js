@@ -1,23 +1,8 @@
 // Rotas de tarefas.
-
 const express = require('express');
-
 const db = require('../config/database');
-
-const {
-    autenticar,
-    autorizar
-} = require('../middlewares/auth');
-
-const {
-    ErroHttp,
-    texto,
-    inteiroPositivo,
-    data,
-    hora,
-    opcao,
-    idDaRota
-} = require('../utils/validacao');
+const {autenticar,autorizar} = require('../middlewares/auth');
+const {ErroHttp,texto,inteiroPositivo,data,hora,opcao,idDaRota} = require('../utils/validacao');
 
 const router = express.Router();
 
@@ -62,73 +47,30 @@ function filtroStatus(req) {
 
 function lerTarefa(body) {
     return {
-        id_usuario: inteiroPositivo(
-            body.id_usuario,
-            'id_usuario'
-        ),
-
+        id_usuario: inteiroPositivo( body.id_usuario, 'id_usuario' ),
         id_canteiro:
             body.id_canteiro === undefined ||
             body.id_canteiro === null ||
-            body.id_canteiro === ''
-                ? null
-                : inteiroPositivo(
-                    body.id_canteiro,
-                    'id_canteiro'
-                ),
+            body.id_canteiro === '' 
+            ? null : inteiroPositivo( body.id_canteiro, 'id_canteiro' ),
 
-        descricao: texto(
-            body.descricao,
-            'descricao',
-            255
-        ),
-
-        data_tarefa: data(
-            body.data_tarefa,
-            'data_tarefa'
-        ),
-
-        hora_inicio: hora(
-            body.hora_inicio,
-            'hora_inicio'
-        ),
-
-        hora_fim: hora(
-            body.hora_fim,
-            'hora_fim'
-        ),
-
-        status: opcao(
-            body.status || 'PENDENTE',
-            'status',
-            STATUS
-        )
+        descricao: texto( body.descricao, 'descricao', 255 ),
+        data_tarefa: data( body.data_tarefa, 'data_tarefa' ),
+        hora_inicio: hora( body.hora_inicio, 'hora_inicio' ),
+        hora_fim: hora( body.hora_fim, 'hora_fim'),
+        status: opcao( body.status || 'PENDENTE', 'status', STATUS )
     };
 }
 
 function tratarErroBanco(err) {
-    // Usuário ou canteiro informado não existe.
-    if (err.code === '23503') {
-        throw new ErroHttp(
-            400,
-            'O usuário ou o canteiro informado não existe.'
-        );
-    }
 
-    // Horário inválido ou conflito de horário.
-    if (err.code === '23P01') {
-        throw new ErroHttp(
-            409,
-            'Já existe uma tarefa agendada para este canteiro nesse horário.'
-        );
-    }
-
-    // hora_fim precisa ser maior que hora_inicio.
-    if (err.code === '23514') {
-        throw new ErroHttp(
-            400,
-            'A hora de término deve ser maior que a hora de início.'
-        );
+    switch (err.code) {
+        // Usuário ou canteiro informado não existe.
+        case '23503':throw new ErroHttp( 400, 'O usuário ou o canteiro informado não existe.' );
+        // Horário inválido ou conflito de horário.
+        case '23P01':throw new ErroHttp( 409, 'Já existe uma tarefa agendada para este canteiro nesse horário.' );
+        // hora_fim precisa ser maior que hora_inicio.
+        case '23514':throw new ErroHttp( 400, 'A hora de término deve ser maior que a hora de início.' );
     }
 
     throw err;
