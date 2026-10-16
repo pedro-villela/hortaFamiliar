@@ -55,15 +55,19 @@ function lerInsumo(body) {
 
 // Listar todos os insumos.
 router.get('/', async (req, res) => {
+    const somenteBaixo = req.query.estoque_baixo;
+    if (somenteBaixo !== undefined && !['true', 'false'].includes(somenteBaixo)) {
+        throw new ErroHttp(400, 'O parâmetro estoque_baixo deve ser true ou false.');
+    }
+
     const { rows } = await db.query(
         `SELECT
-            id_insumo,
-            nome,
-            tipo,
-            quantidade_estoque,
-            estoque_minimo
+            id_insumo, nome, tipo, quantidade_estoque, estoque_minimo,
+            (quantidade_estoque <= estoque_minimo) AS abaixo_do_minimo
          FROM insumo
-         ORDER BY id_insumo`
+         WHERE ($1::boolean IS NULL OR (quantidade_estoque <= estoque_minimo) = $1)
+         ORDER BY id_insumo`,
+        [somenteBaixo === undefined ? null : somenteBaixo === 'true']
     );
 
     res.json(rows);
@@ -79,7 +83,8 @@ router.get('/:id', async (req, res) => {
             nome,
             tipo,
             quantidade_estoque,
-            estoque_minimo
+            estoque_minimo,
+            (quantidade_estoque <= estoque_minimo) AS abaixo_do_minimo
          FROM insumo
          WHERE id_insumo = $1`,
         [id]
@@ -185,4 +190,3 @@ router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
 });
 
 module.exports = router;
-
