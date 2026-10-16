@@ -1,5 +1,4 @@
-
--- Horta Familiar
+- Horta Familiar
 
 -- Restrição de conflito de horários requer a extensão btree_gist
 CREATE EXTENSION IF NOT EXISTS btree_gist;
@@ -69,6 +68,22 @@ CREATE TABLE tarefa_insumo (
     quantidade_utilizada DECIMAL(10,2) NOT NULL CHECK (quantidade_utilizada > 0),
     PRIMARY KEY (id_tarefa, id_insumo)
 );
+
+-- Reservas de ferramentas reutilizáveis. Não possuem gatilho de consumo de estoque.
+-- quantidade_estoque representa a capacidade disponível para ferramentas do mesmo tipo.
+CREATE TABLE tarefa_ferramenta (
+    id_tarefa INT NOT NULL REFERENCES tarefa(id_tarefa) ON DELETE CASCADE,
+    id_insumo INT NOT NULL REFERENCES insumo(id_insumo),
+    quantidade DECIMAL(10,2) NOT NULL CHECK (quantidade > 0),
+    inicio TIMESTAMP NOT NULL,
+    fim TIMESTAMP NOT NULL,
+    ativa BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (id_tarefa, id_insumo),
+    CONSTRAINT chk_tarefa_ferramenta_horario CHECK (fim > inicio)
+);
+
+CREATE INDEX idx_tarefa_ferramenta_periodo
+    ON tarefa_ferramenta (id_insumo, inicio, fim) WHERE ativa = TRUE;
 
 -- Evitar conflitos de agendamento do mesmo canteiro no mesmo horário
 ALTER TABLE tarefa ADD CONSTRAINT excl_tarefa_canteiro_conflito
