@@ -4,14 +4,32 @@ const fs = require('fs');
 const path = require('path');
 const { Client } = require('pg');
 
+
 function configDoBanco() {
     if (process.env.DATABASE_URL) {
         const url = new URL(process.env.DATABASE_URL);
-        return { url, nome: url.pathname.slice(1) };
+        return { url, nome: decodeURIComponent(url.pathname.slice(1)) };
     }
-    const url = new URL(`postgres://${encodeURIComponent(process.env.USER || '')}:${encodeURIComponent(process.env.DB_PASSWORD || '')}@${process.env.DB_HOST}:${process.env.DB_PORT || 5432}/${process.env.DB_NAME}`);
-    return { url, nome: process.env.NAME };
+
+    const nome = process.env.DB_NAME;
+    const usuario = process.env.DB_USER;
+    const senha = process.env.DB_PASSWORD;
+    const host = process.env.DB_HOST || 'localhost';
+    const porta = Number(process.env.DB_PORT) || 5432;
+
+    if (!nome || !usuario || senha === undefined) {
+        throw new Error(
+            'Configure DB_NAME, DB_USER e DB_PASSWORD no arquivo .env.'
+        );
+    }
+
+    const url = new URL(
+        `postgresql://${encodeURIComponent(usuario)}:${encodeURIComponent(senha)}@${host}:${porta}/${encodeURIComponent(nome)}`
+    );
+
+    return { url, nome };
 }
+
 
 async function main() {
     const reset = process.argv.includes('--reset');

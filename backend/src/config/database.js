@@ -1,16 +1,20 @@
-// Configuração da conexão com o PostgreSQL.
+
 require('dotenv').config({ quiet: true });
+
 const { Pool, types } = require('pg');
 
-types.setTypeParser(1700, (valor) => parseFloat(valor)); 
-types.setTypeParser(1082, (valor) => valor);            
+types.setTypeParser(1700, (valor) => parseFloat(valor));
+types.setTypeParser(1082, (valor) => valor);
 
 function montarConfig() {
     if (process.env.DATABASE_URL) {
-        return { connectionString: process.env.DATABASE_URL };
+        return {
+            connectionString: process.env.DATABASE_URL
+        };
     }
+
     return {
-        host: process.env.DB_HOST,
+        host: process.env.DB_HOST || 'localhost',
         port: Number(process.env.DB_PORT) || 5432,
         database: process.env.DB_NAME,
         user: process.env.DB_USER,
