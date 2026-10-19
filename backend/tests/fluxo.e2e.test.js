@@ -8,7 +8,7 @@ describe('Testes End-to-End (E2E) - Fluxos Principais', () => {
     
     // Simula a etapa final do fluxo: Uso de insumo vinculado a uma tarefa
     const resUsoInsumo = await request(app)
-      .post('/api/insumos/1/usar')
+      .post('/api/insumos/1/usar') // <- campos que a API não aceita
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .send({ 
         quantidade: 5,

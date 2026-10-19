@@ -21,7 +21,7 @@ describe('Autenticação e Controle de Acesso', () => {
     const tokenOperacional = gerarTokenSimulado({ perfil: 'OPERACIONAL' });
 
     const res = await request(app)
-      .post('/api/admin/configuracoes')
+      .post('/api/admin/configuracoes') // <- ROTA INEXISTENTE DE ADMIN
       .set('Authorization', `Bearer ${tokenOperacional}`)
       .send({ chave: 'valor' });
 
