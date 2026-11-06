@@ -2,8 +2,15 @@
 
 const express = require('express');
 const db = require('../config/database');
-const { autenticar, autorizar} = require('../middlewares/auth');
-const {ErroHttp,texto,numeroNaoNegativo,opcao,idDaRota} = require('../utils/validacao');
+const { autenticar, autorizar } = require('../middlewares/auth');
+const {
+    ErroHttp,
+    texto,
+    numeroNaoNegativo,
+    opcao,
+    idDaRota
+} = require('../utils/validacao');
+
 const router = express.Router();
 
 router.use(autenticar);
@@ -14,30 +21,55 @@ const TIPOS_INSUMO = [
     'FERRAMENTA'
 ];
 
+// Validar os dados do insumo.
 function lerInsumo(body) {
     return {
         nome: texto(body.nome, 'nome', 100),
         tipo: opcao(body.tipo, 'tipo', TIPOS_INSUMO),
-        quantidade_estoque: numeroNaoNegativo(body.quantidade_estoque,'quantidade_estoque'),
-        estoque_minimo: numeroNaoNegativo(body.estoque_minimo,'estoque_minimo')
+        quantidade_estoque: numeroNaoNegativo(
+            body.quantidade_estoque,
+            'quantidade_estoque'
+        ),
+        estoque_minimo: numeroNaoNegativo(
+            body.estoque_minimo,
+            'estoque_minimo'
+        )
     };
 }
 
 // Listar todos os insumos.
 router.get('/', async (req, res) => {
     const somenteBaixo = req.query.estoque_baixo;
-    if (somenteBaixo !== undefined && !['true', 'false'].includes(somenteBaixo)) {
-        throw new ErroHttp(400, 'O parâmetro estoque_baixo deve ser true ou false.');
+
+    if (
+        somenteBaixo !== undefined &&
+        !['true', 'false'].includes(somenteBaixo)
+    ) {
+        throw new ErroHttp(
+            400,
+            'O parâmetro estoque_baixo deve ser true ou false.'
+        );
     }
 
     const { rows } = await db.query(
         `SELECT
-            id_insumo, nome, tipo, quantidade_estoque, estoque_minimo,
+            id_insumo,
+            nome,
+            tipo,
+            quantidade_estoque,
+            estoque_minimo,
             (quantidade_estoque <= estoque_minimo) AS abaixo_do_minimo
          FROM insumo
-         WHERE ($1::boolean IS NULL OR (quantidade_estoque <= estoque_minimo) = $1)
+         WHERE (
+            $1::boolean IS NULL
+            OR (quantidade_estoque <= estoque_minimo) = $1
+         )
          ORDER BY id_insumo`,
-        [somenteBaixo === undefined ? null : somenteBaixo === 'true']
+        [
+            somenteBaixo === undefined
+                ? null
+                : somenteBaixo === 'true'
+        ]
     );
 
     res.json(rows);
@@ -45,6 +77,8 @@ router.get('/', async (req, res) => {
 
 // Buscar um insumo pelo ID.
 router.get('/:id', async (req, res) => {
+    const id = idDaRota(req);
+
     const { rows } = await db.query(
         `SELECT
             id_insumo,
@@ -55,10 +89,13 @@ router.get('/:id', async (req, res) => {
             (quantidade_estoque <= estoque_minimo) AS abaixo_do_minimo
          FROM insumo
          WHERE id_insumo = $1`,
-        [idDaRota(req)]
+        [id]
     );
 
-    if (rows.length === 0) throw new ErroHttp( 404, 'Insumo não encontrado.' );
+    if (rows.length === 0) {
+        throw new ErroHttp(404, 'Insumo não encontrado.');
+    }
+
     res.json(rows[0]);
 });
 
@@ -67,15 +104,13 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
     const dados = lerInsumo(req.body);
 
     const { rows } = await db.query(
-        `INSERT INTO insumo
-            (
-                nome,
-                tipo,
-                quantidade_estoque,
-                estoque_minimo
-            )
-         VALUES
-            ($1, $2, $3, $4)
+        `INSERT INTO insumo (
+            nome,
+            tipo,
+            quantidade_estoque,
+            estoque_minimo
+         )
+         VALUES ($1, $2, $3, $4)
          RETURNING
             id_insumo,
             nome,
@@ -98,6 +133,46 @@ router.put('/:id', autorizar('ADMIN'), async (req, res) => {
     const id = idDaRota(req);
     const dados = lerInsumo(req.body);
 
+    // Verificar se o insumo existe e se já possui utilização registrada.
+    const consulta = await db.query(
+        `SELECT
+            tipo,
+            (
+                EXISTS (
+                    SELECT 1
+                    FROM plantio_insumo
+                    WHERE id_insumo = $1
+                )
+                OR EXISTS (
+                    SELECT 1
+                    FROM tarefa_insumo
+                    WHERE id_insumo = $1
+                )
+                OR EXISTS (
+                    SELECT 1
+                    FROM tarefa_ferramenta
+                    WHERE id_insumo = $1
+                )
+            ) AS possui_vinculo
+         FROM insumo
+         WHERE id_insumo = $1`,
+        [id]
+    );
+
+    if (consulta.rows.length === 0) {
+        throw new ErroHttp(404, 'Insumo não encontrado.');
+    }
+
+    const insumoAtual = consulta.rows[0];
+
+    // Não permitir alterar o tipo de um insumo já utilizado.
+    if (insumoAtual.tipo !== dados.tipo && insumoAtual.possui_vinculo) {
+        throw new ErroHttp(
+            409,
+            'Não é possível alterar o tipo de um insumo que já possui utilização ou reserva registrada.'
+        );
+    }
+
     const { rows } = await db.query(
         `UPDATE insumo
          SET
@@ -112,28 +187,44 @@ router.put('/:id', autorizar('ADMIN'), async (req, res) => {
             tipo,
             quantidade_estoque,
             estoque_minimo`,
-        [dados.nome,
-         dados.tipo,
-         dados.quantidade_estoque,
-         dados.estoque_minimo,
-         id]
+        [
+            dados.nome,
+            dados.tipo,
+            dados.quantidade_estoque,
+            dados.estoque_minimo,
+            id
+        ]
     );
 
-    if (rows.length === 0) throw new ErroHttp(404, 'Insumo não encontrado.' );
     res.json(rows[0]);
 });
 
- // Excluir insumo.
+// Excluir insumo.
 router.delete('/:id', autorizar('ADMIN'), async (req, res) => {
+    const id = idDaRota(req);
+
     try {
-        const { rowCount } = await db.query('DELETE FROM insumo WHERE id_insumo = $1', [idDaRota(req)]);
-        if (rowCount === 0) throw new ErroHttp(404, 'Insumo não encontrado.');
+        const { rowCount } = await db.query(
+            'DELETE FROM insumo WHERE id_insumo = $1',
+            [id]
+        );
+
+        if (rowCount === 0) {
+            throw new ErroHttp(404, 'Insumo não encontrado.');
+        }
+
         res.status(204).end();
+
     } catch (err) {
-        if (err.code === '23503') throw new ErroHttp(409, 'Não é possível excluir: o insumo já foi utilizado em plantios ou tarefas.');
+        if (err.code === '23503') {
+            throw new ErroHttp(
+                409,
+                'Não é possível excluir: o insumo já foi utilizado em plantios ou tarefas, ou possui reservas registradas.'
+            );
+        }
+
         throw err;
     }
 });
 
 module.exports = router;
-

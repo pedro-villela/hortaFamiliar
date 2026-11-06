@@ -6,20 +6,22 @@
 erDiagram
 
     USUARIO ||--o{ TAREFA : "recebe"
+    USUARIO ||--o{ TAREFA_APROVACAO_ESTOQUE : "autoriza"
 
     CULTURA ||--o{ PLANTIO : "define"
-
     CANTEIRO ||--o{ PLANTIO : "possui"
-
     CANTEIRO ||--o{ TAREFA : "envolve"
 
     PLANTIO ||--o{ PLANTIO_INSUMO : "utiliza"
-
     INSUMO ||--o{ PLANTIO_INSUMO : "e utilizado em"
 
     TAREFA ||--o{ TAREFA_INSUMO : "utiliza"
-
     INSUMO ||--o{ TAREFA_INSUMO : "e utilizado em"
+
+    TAREFA ||--o{ TAREFA_INSUMO_PENDENTE : "aguarda insumos"
+    INSUMO ||--o{ TAREFA_INSUMO_PENDENTE : "aguarda utilizacao"
+
+    TAREFA ||--o{ TAREFA_APROVACAO_ESTOQUE : "possui aprovacao"
 
     USUARIO {
         INT id_usuario PK
@@ -68,6 +70,7 @@ erDiagram
         TIME hora_inicio
         TIME hora_fim
         VARCHAR status
+        TIMESTAMP data_conclusao
     }
 
     PLANTIO_INSUMO {
@@ -81,85 +84,124 @@ erDiagram
         INT id_insumo PK, FK
         DECIMAL quantidade_utilizada
     }
-```
 
+    TAREFA_INSUMO_PENDENTE {
+        INT id_tarefa PK, FK
+        INT id_insumo PK, FK
+        DECIMAL quantidade
+    }
+
+    TAREFA_APROVACAO_ESTOQUE {
+        INT id_aprovacao PK
+        INT id_tarefa FK
+        INT id_admin FK
+        TIMESTAMP data_aprovacao
+        TEXT observacao
+    }
+```
 
 ## 2. Dicionário de dados
 
 ### Tabela: usuario
 
-| Campo      | Tipo         | Restrições       | Descrição                                    |
-| ---------- | ------------ | ---------------- | -------------------------------------------- |
-| id_usuario | INT          | PK, NOT NULL     | Identificador único do usuário               |
-| nome       | VARCHAR(100) | NOT NULL         | Nome completo do usuário                     |
-| email      | VARCHAR(150) | NOT NULL, UNIQUE | E-mail utilizado para identificação e acesso |
-| senha      | VARCHAR(255) | NOT NULL         | Senha do usuário armazenada de forma segura  |
-| perfil     | VARCHAR(20)  | NOT NULL, CHECK  | Perfil de acesso: ADMIN ou OPERACIONAL       |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_usuario | INT | PK, NOT NULL | Identificador único do usuário |
+| nome | VARCHAR(100) | NOT NULL | Nome completo do usuário |
+| email | VARCHAR(150) | NOT NULL, UNIQUE | E-mail utilizado para identificação e acesso |
+| senha | VARCHAR(255) | NOT NULL | Senha do usuário armazenada de forma segura |
+| perfil | VARCHAR(20) | NOT NULL, CHECK | Perfil de acesso: ADMIN ou OPERACIONAL |
 
 ### Tabela: cultura
 
-| Campo                | Tipo         | Restrições          | Descrição                                         |
-| -------------------- | ------------ | ------------------- | ------------------------------------------------- |
-| id_cultura           | INT          | PK, NOT NULL        | Identificador único da cultura                    |
-| nome                 | VARCHAR(100) | NOT NULL, UNIQUE    | Nome da cultura                                   |
-| tempo_maturacao_dias | INT          | NOT NULL, CHECK > 0 | Tempo estimado para maturação da cultura, em dias |
-| espacamento_ideal    | DECIMAL(6,2) | NOT NULL, CHECK > 0 | Espaçamento ideal entre as plantas, em metros     |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_cultura | INT | PK, NOT NULL | Identificador único da cultura |
+| nome | VARCHAR(100) | NOT NULL, UNIQUE | Nome da cultura |
+| tempo_maturacao_dias | INT | NOT NULL, CHECK > 0 | Tempo estimado para maturação da cultura, em dias |
+| espacamento_ideal | DECIMAL(6,2) | NOT NULL, CHECK > 0 | Espaçamento ideal entre as plantas, em metros |
 
 ### Tabela: canteiro
 
-| Campo         | Tipo         | Restrições          | Descrição                            |
-| ------------- | ------------ | ------------------- | ------------------------------------ |
-| id_canteiro   | INT          | PK, NOT NULL        | Identificador único do canteiro      |
-| identificacao | VARCHAR(50)  | NOT NULL, UNIQUE    | Nome ou identificação do canteiro    |
-| area_m2       | DECIMAL(8,2) | NOT NULL, CHECK > 0 | Área do canteiro em metros quadrados |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_canteiro | INT | PK, NOT NULL | Identificador único do canteiro |
+| identificacao | VARCHAR(50) | NOT NULL, UNIQUE | Nome ou identificação do canteiro |
+| area_m2 | DECIMAL(8,2) | NOT NULL, CHECK > 0 | Área do canteiro em metros quadrados |
 
 ### Tabela: plantio
 
-| Campo        | Tipo          | Restrições      | Descrição                                            |
-| ------------ | ------------- | --------------- | ---------------------------------------------------- |
-| id_plantio   | INT           | PK, NOT NULL    | Identificador único do plantio                       |
-| id_cultura   | INT           | FK, NOT NULL    | Referência à cultura plantada                        |
-| id_canteiro  | INT           | FK, NOT NULL    | Referência ao canteiro utilizado                     |
-| data_plantio | DATE          | NOT NULL        | Data em que o plantio foi realizado                  |
-| status       | VARCHAR(20)   | NOT NULL, CHECK | Situação do plantio: CRESCIMENTO, COLHIDO ou PERDIDO |
-| peso_colhido | DECIMAL(10,2) | CHECK >= 0      | Peso obtido na colheita, em quilogramas              |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_plantio | INT | PK, NOT NULL | Identificador único do plantio |
+| id_cultura | INT | FK, NOT NULL | Referência à cultura plantada |
+| id_canteiro | INT | FK, NOT NULL | Referência ao canteiro utilizado |
+| data_plantio | DATE | NOT NULL | Data em que o plantio foi realizado |
+| status | VARCHAR(20) | NOT NULL, CHECK | Situação do plantio: CRESCIMENTO, COLHIDO ou PERDIDO |
+| peso_colhido | DECIMAL(10,2) | CHECK >= 0 | Peso obtido na colheita, em quilogramas |
 
 ### Tabela: insumo
 
-| Campo              | Tipo          | Restrições           | Descrição                                           |
-| ------------------ | ------------- | -------------------- | --------------------------------------------------- |
-| id_insumo          | INT           | PK, NOT NULL         | Identificador único do insumo                       |
-| nome               | VARCHAR(100)  | NOT NULL             | Nome do insumo                                      |
-| tipo               | VARCHAR(20)   | NOT NULL, CHECK      | Tipo do insumo: SEMENTE, FERTILIZANTE ou FERRAMENTA |
-| quantidade_estoque | DECIMAL(10,2) | NOT NULL, CHECK >= 0 | Quantidade disponível no estoque                    |
-| estoque_minimo     | DECIMAL(10,2) | NOT NULL, CHECK >= 0 | Quantidade mínima para geração de alerta de estoque |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_insumo | INT | PK, NOT NULL | Identificador único do insumo |
+| nome | VARCHAR(100) | NOT NULL | Nome do insumo |
+| tipo | VARCHAR(20) | NOT NULL, CHECK | Tipo do insumo: SEMENTE, FERTILIZANTE ou FERRAMENTA |
+| quantidade_estoque | DECIMAL(10,2) | NOT NULL | Quantidade disponível no estoque, podendo apresentar saldo negativo após aprovação excepcional |
+| estoque_minimo | DECIMAL(10,2) | NOT NULL, CHECK >= 0 | Quantidade mínima para geração de alerta de estoque |
 
 ### Tabela: tarefa
 
-| Campo       | Tipo         | Restrições      | Descrição                                                    |
-| ----------- | ------------ | --------------- | ------------------------------------------------------------ |
-| id_tarefa   | INT          | PK, NOT NULL    | Identificador único da tarefa                                |
-| id_usuario  | INT          | FK, NOT NULL    | Usuário responsável pela tarefa                              |
-| id_canteiro | INT          | FK, NULL        | Canteiro relacionado à tarefa                                |
-| descricao   | VARCHAR(255) | NOT NULL        | Descrição da atividade a ser realizada                       |
-| data_tarefa | DATE         | NOT NULL        | Data prevista para realização da tarefa                      |
-| hora_inicio | TIME         | NOT NULL        | Horário de início da tarefa                                  |
-| hora_fim    | TIME         | NOT NULL        | Horário de término da tarefa                                 |
-| status      | VARCHAR(20)  | NOT NULL, CHECK | Situação da tarefa: PENDENTE, CONCLUIDA ou CANCELADA         |
-|             |              | CHECK           | O horário de término deve ser posterior ao horário de início |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_tarefa | INT | PK, NOT NULL | Identificador único da tarefa |
+| id_usuario | INT | FK, NOT NULL | Usuário responsável pela tarefa |
+| id_canteiro | INT | FK, NULL | Canteiro relacionado à tarefa |
+| descricao | VARCHAR(255) | NOT NULL | Descrição da atividade a ser realizada |
+| data_tarefa | DATE | NOT NULL | Data prevista para realização da tarefa |
+| hora_inicio | TIME | NOT NULL | Horário de início da tarefa |
+| hora_fim | TIME | NOT NULL | Horário de término da tarefa |
+| status | VARCHAR(20) | NOT NULL, CHECK | Situação: PENDENTE, AGUARDANDO_APROVACAO, CONCLUIDA ou CANCELADA |
+| data_conclusao | TIMESTAMP | NULL | Data e horário de conclusão da tarefa |
+
+**Regra de negócio:** o horário de término deve ser posterior ao horário de início. Tarefas com consumo de insumos acima do estoque disponível podem permanecer em `AGUARDANDO_APROVACAO` até a autorização de um administrador.
 
 ### Tabela: plantio_insumo
 
-| Campo                | Tipo          | Restrições          | Descrição                                 |
-| -------------------- | ------------- | ------------------- | ----------------------------------------- |
-| id_plantio           | INT           | PK, FK, NOT NULL    | Identificador do plantio relacionado      |
-| id_insumo            | INT           | PK, FK, NOT NULL    | Identificador do insumo utilizado         |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_plantio | INT | PK, FK, NOT NULL | Identificador do plantio relacionado |
+| id_insumo | INT | PK, FK, NOT NULL | Identificador do insumo utilizado |
 | quantidade_utilizada | DECIMAL(10,2) | NOT NULL, CHECK > 0 | Quantidade do insumo utilizada no plantio |
 
 ### Tabela: tarefa_insumo
 
-| Campo                | Tipo          | Restrições          | Descrição                                   |
-| -------------------- | ------------- | ------------------- | ------------------------------------------- |
-| id_tarefa            | INT           | PK, FK, NOT NULL    | Identificador da tarefa relacionada         |
-| id_insumo            | INT           | PK, FK, NOT NULL    | Identificador do insumo utilizado na tarefa |
-| quantidade_utilizada | DECIMAL(10,2) | NOT NULL, CHECK > 0 | Quantidade do insumo utilizada na tarefa    |
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_tarefa | INT | PK, FK, NOT NULL | Identificador da tarefa relacionada |
+| id_insumo | INT | PK, FK, NOT NULL | Identificador do insumo utilizado na tarefa |
+| quantidade_utilizada | DECIMAL(10,2) | NOT NULL, CHECK > 0 | Quantidade do insumo utilizada na tarefa |
+
+**Regra de negócio:** o registro do consumo atualiza automaticamente o estoque por meio de gatilhos no banco de dados.
+
+### Tabela: tarefa_insumo_pendente
+
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_tarefa | INT | PK, FK, NOT NULL | Identificador da tarefa relacionada |
+| id_insumo | INT | PK, FK, NOT NULL | Identificador do insumo aguardando aprovação |
+| quantidade | DECIMAL(10,2) | NOT NULL, CHECK > 0 | Quantidade solicitada para consumo excepcional |
+
+**Regra de negócio:** armazena temporariamente os insumos de tarefas que necessitam de aprovação administrativa por insuficiência de estoque. Enquanto aguardam aprovação, esses registros não provocam baixa no estoque.
+
+### Tabela: tarefa_aprovacao_estoque
+
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_aprovacao | INT | PK, NOT NULL | Identificador único da aprovação |
+| id_tarefa | INT | FK, NOT NULL | Referência à tarefa autorizada |
+| id_admin | INT | FK, NOT NULL | Referência ao usuário administrador responsável pela aprovação |
+| data_aprovacao | TIMESTAMP | NOT NULL | Data e horário em que a aprovação foi realizada |
+| observacao | TEXT | NULL | Observação ou justificativa da aprovação |
+
+**Regra de negócio:** somente usuários com perfil ADMIN podem autorizar o consumo excepcional. Após a aprovação, os insumos pendentes são registrados como consumo efetivo, o estoque é atualizado e a tarefa passa para o status PENDENTE.
