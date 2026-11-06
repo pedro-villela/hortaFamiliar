@@ -1,4 +1,4 @@
-# Relatório Individual de Contribuição — Sprint 4 — [Seu nome] (RA [seu RA])
+# Relatório Individual de Contribuição — Sprint 4 — Wilson Lau Júnior RA: 2840482423013 
 
 **Papel nesta sprint:** Desenvolvimento Backend / [confirmar papel oficial da equipe]
 
