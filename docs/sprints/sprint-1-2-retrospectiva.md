@@ -68,6 +68,7 @@
 
 ---
 
+
 ## 4. Ações para a próxima sprint
 
 | Ação | Responsável |
