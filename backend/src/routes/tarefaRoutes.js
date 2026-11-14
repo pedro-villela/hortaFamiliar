@@ -278,7 +278,7 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
         const inicio = `${dados.data_tarefa} ${dados.hora_inicio}`;
         const fim = `${dados.data_tarefa} ${dados.hora_fim}`;
 
-        for (const item of ferramentas) {
+                for (const item of ferramentas) {
             const reserva = await client.query(
                 `SELECT
                     COALESCE(SUM(tf.quantidade), 0) AS quantidade_reservada
@@ -304,6 +304,37 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
                 throw new ErroHttp(
                     409,
                     `Conflito de agendamento: a ferramenta '${item.estoque.nome}' não está disponível nesse horário. Disponível para reserva: ${Math.max(0, disponivel)}.`
+                );
+            }
+        }
+
+        // Verifica explicitamente se o canteiro já possui tarefa ativa no mesmo período História 11
+        if (dados.id_canteiro !== null) {
+            const conflitoCanteiro = await client.query(
+                `SELECT
+                    t.id_tarefa,
+                    cn.identificacao
+                 FROM tarefa t
+                 JOIN canteiro cn
+                    ON cn.id_canteiro = t.id_canteiro
+                 WHERE t.id_canteiro = $1
+                   AND t.data_tarefa = $2::date
+                   AND t.status <> 'CANCELADA'
+                   AND t.hora_inicio < $4::time
+                   AND t.hora_fim > $3::time
+                 LIMIT 1`,
+                [
+                    dados.id_canteiro,
+                    dados.data_tarefa,
+                    dados.hora_inicio,
+                    dados.hora_fim
+                ]
+            );
+
+            if (conflitoCanteiro.rows.length > 0) {
+                throw new ErroHttp(
+                    409,
+                    `Conflito de agendamento: o canteiro '${conflitoCanteiro.rows[0].identificacao}' já está ocupado neste horário.`
                 );
             }
         }
