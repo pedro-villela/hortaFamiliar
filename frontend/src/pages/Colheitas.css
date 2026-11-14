@@ -1,0 +1,183 @@
+
+.colheitas-cabecalho {
+  margin-bottom: 28px;
+}
+
+.colheitas-cabecalho h1 {
+  color: #315c3b;
+  margin-bottom: 8px;
+}
+
+.colheitas-cabecalho p {
+  color: #666;
+}
+
+.colheitas-indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.colheitas-indicadores article {
+  background: white;
+  border: 1px solid #e1e6e1;
+  border-radius: 10px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.colheitas-indicadores span {
+  color: #666;
+  font-size: 14px;
+}
+
+.colheitas-indicadores strong {
+  color: #315c3b;
+  font-size: 28px;
+}
+
+.colheitas-formulario-card,
+.colheitas-listagem {
+  background: white;
+  border: 1px solid #e1e6e1;
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 25px;
+}
+
+.colheitas-formulario-card h2,
+.colheitas-listagem h2 {
+  color: #315c3b;
+  margin-top: 0;
+}
+
+.colheitas-formulario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.colheitas-formulario-grid > div,
+.colheitas-observacoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.colheitas-formulario-card label {
+  font-weight: 600;
+}
+
+.colheitas-formulario-card input,
+.colheitas-formulario-card select,
+.colheitas-formulario-card textarea,
+.colheitas-listagem-topo input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.colheitas-observacoes {
+  margin-top: 20px;
+}
+
+.colheitas-acoes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.colheitas-botao-cancelar {
+  background: #f2f2f2;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px 18px;
+  cursor: pointer;
+}
+
+.colheitas-listagem-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.colheitas-listagem-topo input {
+  max-width: 320px;
+}
+
+.colheitas-tabela-container {
+  overflow-x: auto;
+}
+
+.colheitas-tabela-container table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.colheitas-tabela-container th,
+.colheitas-tabela-container td {
+  padding: 13px;
+  border-bottom: 1px solid #e8ece8;
+  white-space: nowrap;
+}
+
+.colheitas-tabela-container th {
+  background: #f2f6f2;
+  color: #315c3b;
+}
+
+.colheitas-botoes-tabela {
+  display: flex;
+  gap: 8px;
+}
+
+.colheitas-botoes-tabela button {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #315c3b;
+  color: #315c3b;
+  background: white;
+  cursor: pointer;
+}
+
+.colheitas-botoes-tabela .colheitas-excluir {
+  color: #a52a2a;
+  border-color: #a52a2a;
+}
+
+.colheitas-vazio {
+  padding: 20px;
+  color: #666;
+  text-align: center;
+}
+
+@media (max-width: 1000px) {
+  .colheitas-indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .colheitas-indicadores,
+  .colheitas-formulario-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .colheitas-listagem-topo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .colheitas-listagem-topo input {
+    max-width: none;
+  }
+}

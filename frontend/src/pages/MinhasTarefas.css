@@ -1,0 +1,130 @@
+
+.seletor-membro,
+.filtro-minhas-tarefas {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 25px 0;
+}
+
+.seletor-membro label,
+.filtro-minhas-tarefas label {
+  font-weight: 600;
+}
+
+.seletor-membro select,
+.filtro-minhas-tarefas select {
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+  min-width: 200px;
+  background: white;
+}
+
+.resumo-minhas-tarefas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.resumo-membro-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resumo-membro-card span {
+  color: #666;
+  font-size: 14px;
+}
+
+.resumo-membro-card strong {
+  color: #315c3b;
+  font-size: 30px;
+}
+
+.lista-minhas-tarefas {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, 320px), 1fr)
+  );
+  gap: 20px;
+}
+
+.cartao-minha-tarefa {
+  background: white;
+  border: 1px solid #e1e6e1;
+  border-radius: 10px;
+  padding: 24px;
+}
+
+.cabecalho-minha-tarefa {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cabecalho-minha-tarefa h2 {
+  font-size: 20px;
+  margin: 0;
+  color: #315c3b;
+}
+
+.cartao-minha-tarefa p {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.status-minha-tarefa {
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-minha-tarefa.pendente {
+  background: #fff0c2;
+  color: #906000;
+}
+
+.status-minha-tarefa.andamento {
+  background: #e7eaf5;
+  color: #425a91;
+}
+
+.status-minha-tarefa.concluida {
+  background: #e1eedc;
+  color: #315c3b;
+}
+
+.mensagem-concluida {
+  color: #315c3b;
+  font-weight: bold;
+}
+
+.mensagem-sem-tarefas {
+  padding: 25px;
+  background: white;
+  border-radius: 8px;
+  color: #666;
+}
+
+@media (max-width: 700px) {
+  .resumo-minhas-tarefas {
+    flex-direction: column;
+  }
+
+  .resumo-membro-card {
+    min-width: 0;
+  }
+}

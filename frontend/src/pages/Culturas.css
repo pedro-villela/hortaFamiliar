@@ -1,0 +1,117 @@
+
+.culturas-acoes {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin: 35px 0;
+}
+
+.culturas-acoes input {
+  width: 260px;
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+}
+
+.botao-verde {
+  background: #315c3b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 13px 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.botao-verde:hover {
+  background: #24462d;
+}
+
+.tabela-culturas-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.tabela-culturas {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabela-culturas th {
+  background: #d8e2d0;
+  padding: 15px;
+}
+
+.tabela-culturas td {
+  padding: 14px 15px;
+}
+
+.tabela-culturas tbody tr:nth-child(even) {
+  background: #f1f3f0;
+}
+
+.status-ativo {
+  background: #e1eedc;
+  color: #315c3b;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.acao-tabela {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.formulario-cultura {
+  background: white;
+  padding: 25px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  max-width: 600px;
+  margin-bottom: 30px;
+}
+
+.formulario-cultura h2 {
+  margin-top: 0;
+}
+
+.formulario-cultura label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: bold;
+}
+
+.formulario-cultura input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+}
+
+.formulario-botoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.botao-cancelar {
+  background: white;
+  color: #315c3b;
+  border: 1px solid #315c3b;
+  border-radius: 6px;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+
+.lista-vazia {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}

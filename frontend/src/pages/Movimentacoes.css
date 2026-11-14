@@ -1,0 +1,130 @@
+
+.movimentacoes-painel {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+  gap: 24px;
+  margin: 28px 0;
+  align-items: start;
+}
+
+.movimentacoes-formulario,
+.movimentacoes-saldos,
+.movimentacoes-historico {
+  background: white;
+  padding: 24px;
+  border: 1px solid #e1e6e1;
+  border-radius: 10px;
+}
+
+.movimentacoes-formulario h2,
+.movimentacoes-saldos h2,
+.movimentacoes-historico h2 {
+  margin-top: 0;
+  color: #315c3b;
+}
+
+.movimentacoes-formulario label {
+  display: block;
+  font-weight: 600;
+  margin: 18px 0 8px;
+}
+
+.movimentacoes-formulario input,
+.movimentacoes-formulario select,
+.movimentacoes-formulario textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.movimentacoes-formulario button {
+  margin-top: 22px;
+}
+
+.movimentacoes-saldo {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.movimentacoes-saldo > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.movimentacoes-saldo span {
+  color: #666;
+  font-size: 13px;
+}
+
+.movimentacoes-alerta {
+  color: #b45309 !important;
+  font-weight: 600;
+}
+
+.movimentacoes-historico {
+  margin-top: 24px;
+}
+
+.movimentacoes-tabela-container {
+  overflow-x: auto;
+}
+
+.movimentacoes-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.movimentacoes-tabela th,
+.movimentacoes-tabela td {
+  padding: 13px;
+  border-bottom: 1px solid #e8ece8;
+  white-space: nowrap;
+}
+
+.movimentacoes-tabela th {
+  background: #f2f6f2;
+  color: #315c3b;
+}
+
+.mov-tipo-entrada {
+  color: #315c3b;
+  font-weight: bold;
+}
+
+.mov-tipo-saida {
+  color: #b45309;
+  font-weight: bold;
+}
+
+.movimentacoes-vazio {
+  padding: 20px;
+  color: #666;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
+  .movimentacoes-painel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.botao-estornar {
+  background: #fff3e6;
+  color: #9a4d00;
+  border: 1px solid #e6b980;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.botao-estornar:hover {
+  background: #ffe4c4;
+}

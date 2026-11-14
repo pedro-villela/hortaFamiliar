@@ -1,0 +1,235 @@
+
+/* =========================================
+   TELA DE LOGIN
+========================================= */
+
+.login-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.login-apresentacao {
+  width: 45%;
+  background-color: #315c3b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+}
+
+.login-apresentacao h1 {
+  font-size: 36px;
+  margin-bottom: 30px;
+}
+
+.login-apresentacao h2 {
+  font-size: 25px;
+}
+
+.login-apresentacao p {
+  line-height: 1.7;
+}
+
+.login-formulario {
+  width: 55%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.formulario {
+  width: 100%;
+  max-width: 400px;
+}
+
+.formulario h2 {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.formulario label {
+  display: block;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.formulario input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+}
+
+.botao-entrar {
+  width: 100%;
+  padding: 14px;
+  margin-top: 25px;
+  background-color: #315c3b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.botao-entrar:hover {
+  background-color: #24462d;
+}
+
+.cadastro {
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* =========================================
+   CAMPOS DE FORMULÁRIO
+========================================= */
+
+.formulario select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+  background-color: white;
+}
+
+.link-texto {
+  border: none;
+  background: transparent;
+  color: #315c3b;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-texto:hover {
+  text-decoration: underline;
+}
+
+.formulario [role="status"] {
+  margin-top: 16px;
+  color: #315c3b;
+  font-size: 14px;
+}
+
+/* =========================================
+   LAYOUT ADMINISTRATIVO
+========================================= */
+
+.layout-admin {
+  display: flex;
+  min-height: 100vh;
+}
+
+.area-principal {
+  flex: 1;
+  min-width: 0;
+}
+
+/* =========================================
+   BARRA SUPERIOR
+========================================= */
+
+.barra-superior {
+  height: 75px;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 35px;
+}
+
+.barra-superior input {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #f2f3f2;
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.usuario div {
+  display: flex;
+  flex-direction: column;
+}
+
+.usuario small {
+  font-size: 12px;
+}
+
+/* =========================================
+   CONTEÚDO DAS PÁGINAS
+========================================= */
+
+.conteudo-dashboard {
+  padding: 40px;
+}
+
+.conteudo-dashboard h1 {
+  margin-bottom: 8px;
+}
+
+/* =========================================
+   CARDS DO DASHBOARD
+========================================= */
+
+.cards-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 35px;
+}
+
+.card-indicador {
+  background: white;
+  border-radius: 10px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 6px #00000012;
+}
+
+.card-indicador strong {
+  color: #315c3b;
+  font-size: 32px;
+}
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 850px) {
+  .cards-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-apresentacao,
+  .login-formulario {
+    width: 100%;
+    padding: 30px;
+  }
+}
+
+@media (max-width: 600px) {
+  .layout-admin {
+    flex-direction: column;
+  }
+
+  .cards-dashboard {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,105 @@
+
+.plantios-resumo {
+  display: flex;
+  gap: 20px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+
+.plantio-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plantio-card span {
+  font-size: 14px;
+  color: #666;
+}
+
+.plantio-card strong {
+  font-size: 30px;
+  color: #315c3b;
+}
+
+.plantios-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.plantios-acoes input,
+.plantios-acoes select {
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+  min-width: 200px;
+}
+
+.formulario-plantio {
+  background: white;
+  padding: 25px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  max-width: 600px;
+  margin-bottom: 30px;
+}
+
+.formulario-plantio h2 {
+  margin-top: 0;
+}
+
+.formulario-plantio label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: bold;
+}
+
+.formulario-plantio input,
+.formulario-plantio select,
+.formulario-plantio textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.status-plantio {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-plantio.planejado {
+  background: #e7eaf5;
+  color: #425a91;
+}
+
+.status-plantio.andamento {
+  background: #fff0c2;
+  color: #906000;
+}
+
+.status-plantio.concluido {
+  background: #e1eedc;
+  color: #315c3b;
+}
+
+@media (max-width: 700px) {
+  .plantios-resumo {
+    flex-direction: column;
+  }
+
+  .plantio-card {
+    min-width: 0;
+  }
+}
