@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../src/server');
+const app = require('../src/app');
 const { gerarTokenSimulado } = require('./utils/testHelpers');
 
 describe('Gestão de Culturas e Canteiros', () => {
