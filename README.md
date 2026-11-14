@@ -141,7 +141,7 @@ Laboratório de Engenharia de Software · ADS · Fatec Ribeirão Preto · 2026.
 | `npm run dev` | Inicia o servidor em modo de desenvolvimento |
 | `npm test` | Executa a suíte de testes do backend |
 | `npm run db:setup` | Executa a configuração inicial do banco e o schema, conforme o script disponível |
-| `npm run db:migrate` | Executa as migrações e seeds, caso estejam configurados no projeto |
+| `npm run db:seed` | Insere os dados iniciais de exemplo no banco de dados |
 
 ### Frontend (`/frontend`)
 

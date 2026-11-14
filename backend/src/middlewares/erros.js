@@ -7,7 +7,6 @@ function naoEncontrado(req, res) {
 }
 
 function tratarErros(err, req, res, next) {
-    console.error(err);
 
     if (err instanceof ErroHttp) {
         return res.status(err.status).json({ erro: err.message});
