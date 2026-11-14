@@ -2,7 +2,7 @@
 const express = require('express');
 const db = require('../config/database');
 const { autenticar, autorizar } = require('../middlewares/auth');
-const {ErroHttp,inteiroPositivo,data,opcao,numeroNaoNegativo,idDaRota} = require('../utils/validacao');
+const {ErroHttp, inteiroPositivo, numeroPositivo, data, opcao, numeroNaoNegativo, idDaRota} = require('../utils/validacao');
 
 const router = express.Router();
 
