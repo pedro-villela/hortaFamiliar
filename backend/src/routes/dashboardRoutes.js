@@ -1,4 +1,3 @@
-
 // Rotas do dashboard e relatórios.
 
 const express = require('express');
@@ -10,34 +9,16 @@ const router = express.Router();
 
 router.use(autenticar);
 
-// Validar se a data informada existe de verdade.
-function validarDataRelatorio(valor, campo) {
-    const dataValidada = data(valor, campo);
-    const [ano, mes, dia] = dataValidada.split('-').map(Number);
-
-    const dataReal = new Date(Date.UTC(ano, mes - 1, dia));
-
-    if (
-        dataReal.getUTCFullYear() !== ano ||
-        dataReal.getUTCMonth() !== mes - 1 ||
-        dataReal.getUTCDate() !== dia
-    ) {
-        throw new ErroHttp(400, `A data de "${campo}" não é válida.`);
-    }
-
-    return dataValidada;
-}
-
 // GET /api/dashboard/producao
 // Dashboard de produção por cultura e canteiro.
 router.get('/producao', autorizar('ADMIN'), async (req, res) => {
 
-    const dataInicio = validarDataRelatorio(
+    const dataInicio = data(
         req.query.data_inicio,
         'data_inicio'
     );
 
-    const dataFim = validarDataRelatorio(
+    const dataFim = data(
         req.query.data_fim,
         'data_fim'
     );
@@ -57,7 +38,7 @@ router.get('/producao', autorizar('ADMIN'), async (req, res) => {
             cn.identificacao AS canteiro,
             COUNT(p.id_plantio)::INTEGER AS total_plantios,
             COALESCE(SUM(p.peso_colhido), 0) AS produtividade_total_kg,
-            COALESCE(AVG(p.peso_colhido), 0) AS produtividade_media_kg
+            ROUND(COALESCE(AVG(p.peso_colhido), 0), 2) AS produtividade_media_kg
          FROM plantio p
          INNER JOIN cultura c
             ON c.id_cultura = p.id_cultura
@@ -137,6 +118,5 @@ router.get('/estoque', autorizar('ADMIN'), async (req, res) => {
         estoque: rows
     });
 });
-
 
 module.exports = router;
