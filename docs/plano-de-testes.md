@@ -22,9 +22,9 @@ Um merge não deverá ser realizado quando:
 
 * algum teste unitário ou de integração existente apresentar falha;
 * uma regra de negócio crítica estiver funcionando de forma incorreta;
-* houver possibilidade de estoque negativo;
-* o sistema permitir o agendamento de uma tarefa sem estoque suficiente, quando a regra exigir bloqueio;
-* o sistema permitir conflito de uso do mesmo canteiro no mesmo período;
+* houver possibilidade de estoque negativo sem aprovação excepcional de um administrador;
+* o sistema permitir a conclusão de uma tarefa sem estoque suficiente sem antes passar por aprovação administrativa;
+* o sistema permitir conflito de uso do mesmo canteiro ou ferramenta no mesmo período;
 * um usuário conseguir acessar funcionalidades que não pertencem ao seu perfil;
 * uma funcionalidade essencial do MVP deixar de funcionar após uma alteração.
 
@@ -36,21 +36,22 @@ Falhas em funcionalidades secundárias ou melhorias não essenciais ao MVP poder
 | --- | --- | --- | --- | --- | --- |
 | CT01 | #1 | Usuário realiza login com dados válidos | E-mail e senha cadastrados | Sistema autentica o usuário e apresenta as funcionalidades correspondentes ao seu perfil | Alta |
 | CT02 | #1 | Usuário tenta acessar funcionalidade não permitida ao seu perfil | Usuário OPERACIONAL acessando função exclusiva do ADMIN | Acesso é bloqueado | Alta |
-| CT03 | #2 | Administrador cadastra uma cultura | Nome, tempo de maturação e espaçamento válidos | Cultura é cadastrada corretamente | Média |
+| CT03 | #2 | Administrador cadastra uma cultura | Nome, tempo de maturação e espaçamento válidos | Cultura é cadastrada corretamente e cadastros duplicados são rejeitados | Média |
 | CT04 | #3 e #4 | Administrador cadastra canteiro e insumo com dados inválidos | Identificação duplicada ou quantidade de estoque negativa | Sistema rejeita o cadastro e informa o problema | Alta |
 | CT05 | #5 | Administrador registra um plantio | Cultura e canteiro existentes, data e status válidos | Plantio é registrado e relacionado corretamente à cultura e ao canteiro | Média |
 | CT06 | #6 | Administrador cria e atribui uma tarefa | Descrição, data, horário, canteiro e usuário válidos | Tarefa é criada e atribuída ao membro selecionado | Alta |
-| CT07 | #7 e #8 | Membro visualiza e conclui sua própria tarefa | Usuário autenticado com tarefa atribuída | Apenas suas tarefas são exibidas e a conclusão registra a tarefa como concluída | Alta |
+| CT07 | #7 e #8 | Membro visualiza e conclui sua própria tarefa | Usuário autenticado com tarefa atribuída | Apenas suas tarefas são exibidas, outro membro é impedido de concluí-la e a conclusão pelo responsável registra a tarefa como concluída | Alta |
 | CT08 | #9 | Administrador registra utilização de insumo com estoque suficiente | Insumo e quantidade válida | Utilização é registrada e o estoque é reduzido corretamente | Alta |
-| CT09 | #10 | Sistema tenta agendar tarefa sem estoque suficiente | Insumo com quantidade inferior à necessária | Agendamento é bloqueado e o sistema informa a insuficiência de estoque | Alta |
-| CT10 | #11 | Sistema tenta agendar tarefas conflitantes no mesmo canteiro | Duas tarefas para o mesmo canteiro e horário sobreposto | Segunda tarefa é bloqueada e o conflito é informado | Alta |
+| CT09 | #10 | Sistema agenda tarefa sem estoque suficiente | Insumo com quantidade inferior à necessária | Tarefa fica retida em `AGUARDANDO_APROVACAO` e o sistema emite alerta de insuficiência de estoque | Alta |
+| CT10 | #11 | Sistema tenta agendar tarefas conflitantes no mesmo canteiro ou ferramenta | Duas tarefas para o mesmo canteiro ou ferramenta e horário sobreposto | Segunda tarefa é bloqueada e o conflito é informado | Alta |
 | CT11 | #12 | Administrador consulta o dashboard de produção | Plantios e colheitas cadastrados | Dashboard apresenta os dados agrupados corretamente por cultura e canteiro | Média |
 | CT12 | #13 | Administrador consulta o resumo do estoque | Insumos com diferentes níveis de estoque | Sistema apresenta as quantidades atuais e identifica os itens abaixo do estoque mínimo | Média |
 | CT13 | #1 a #13 | Execução do fluxo principal do sistema | Cadastro → plantio → tarefa → utilização de insumo → conclusão | O fluxo é concluído sem inconsistências entre as funcionalidades | Alta |
-| CT14 | #4, #9 e #13 | Alteração do estoque após utilização de insumo | Estoque inicial e quantidade utilizada | O estoque final corresponde ao estoque inicial menos a quantidade utilizada e os alertas são atualizados quando necessário | Alta |
+| CT14 | #4, #9, #10 e #13 | Alteração do estoque após utilização de insumo | Estoque inicial e quantidade utilizada | O estoque final corresponde ao estoque inicial menos a quantidade utilizada e os alertas são atualizados quando necessário | Alta |
+| CT15 | #14 | Administrador aprova tarefa sem estoque suficiente | Tarefa em `AGUARDANDO_APROVACAO` e confirmação do ADMIN | Aprovação é registrada, o estoque é descontado e a tarefa passa para `PENDENTE` | Média |
 
 ### Observação sobre a evolução dos testes
 
-Os casos apresentados representam o conjunto inicial de testes do MVP. Novos casos poderão ser acrescentados conforme novas funcionalidades forem implementadas ou quando uma falha identificada durante o desenvolvimento exigir um novo teste de regressão.
+Os casos apresentados representam o conjunto de testes das histórias #1 a #14. Novos casos poderão ser acrescentados conforme novas funcionalidades forem implementadas ou quando uma falha identificada durante o desenvolvimento exigir um novo teste de regressão.
 
-As histórias classificadas como **Won't** no backlog não serão consideradas no plano inicial. 
+As histórias classificadas como **Won't** no backlog não serão consideradas no plano inicial.
