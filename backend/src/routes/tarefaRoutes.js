@@ -485,7 +485,23 @@ router.get('/:id', async (req, res) => {
         );
     }
 
-    res.json(tarefa);
+    const insumos = await db.query(
+        `SELECT
+            ti.id_insumo,
+            i.nome,
+            i.tipo,
+            ti.quantidade_utilizada
+        FROM tarefa_insumo ti
+        JOIN insumo i ON i.id_insumo = ti.id_insumo
+        WHERE ti.id_tarefa = $1
+        ORDER BY ti.id_insumo`,
+        [id]
+    );
+
+    res.json({
+        ...tarefa,
+        insumos: insumos.rows
+    });
 });
 
 // POST /api/tarefas/:id/aprovar-estoque
@@ -805,6 +821,84 @@ router.patch('/:id/cancelar', async (req, res) => {
             await client.query('ROLLBACK');
         }
 
+        throw err;
+    } finally {
+        client.release();
+    }
+});
+
+// POST /api/tarefas/:id/insumos — Registra utilização de insumos em uma tarefa (História 9)
+router.post('/:id/insumos', autorizar('ADMIN'), async (req, res) => {
+    const idTarefa = idDaRota(req);
+    const insumosReq = lerInsumos(req.body);
+
+    if (insumosReq.length === 0) {
+        throw new ErroHttp(400, 'Informe ao menos um insumo para registrar a utilização.');
+    }
+
+    const client = await db.pool.connect();
+    let transacaoIniciada = false;
+
+    try {
+        await client.query('BEGIN');
+        transacaoIniciada = true;
+
+        const tarefaRes = await client.query(
+            'SELECT id_tarefa, status FROM tarefa WHERE id_tarefa = $1 FOR UPDATE',
+            [idTarefa]
+        );
+        if (tarefaRes.rows.length === 0) {
+            throw new ErroHttp(404, 'Tarefa não encontrada.');
+        }
+        if (tarefaRes.rows[0].status === 'CANCELADA') {
+            throw new ErroHttp(400, 'Não é possível registrar utilização de insumos em uma tarefa cancelada.');
+        }
+
+        const ids = insumosReq.map(item => item.id_insumo);
+        const estoqueRows = await client.query(
+            `SELECT id_insumo, nome, tipo, quantidade_estoque, estoque_minimo
+             FROM insumo WHERE id_insumo = ANY($1::int[])
+             ORDER BY id_insumo FOR UPDATE`,
+            [ids]
+        );
+        const estoquePorId = new Map(estoqueRows.rows.map(row => [row.id_insumo, row]));
+        const alertas = [];
+
+        for (const item of insumosReq) {
+            const estoque = estoquePorId.get(item.id_insumo);
+            if (!estoque) throw new ErroHttp(404, `Insumo ID ${item.id_insumo} não encontrado.`);
+            if (estoque.tipo === 'FERRAMENTA') {
+                throw new ErroHttp(400, `'${estoque.nome}' é uma ferramenta reutilizável e não um insumo consumível.`);
+            }
+            if (item.quantidade > Number(estoque.quantidade_estoque)) {
+                throw new ErroHttp(400, `Estoque insuficiente para '${estoque.nome}'. Disponível: ${estoque.quantidade_estoque}; solicitado: ${item.quantidade}.`);
+            }
+            if ((Number(estoque.quantidade_estoque) - item.quantidade) <= Number(estoque.estoque_minimo)) {
+                alertas.push(`Atenção: o estoque de '${estoque.nome}' ficará abaixo ou igual ao mínimo após esta tarefa.`);
+            }
+        }
+
+        for (const item of insumosReq) {
+            await client.query(
+                `INSERT INTO tarefa_insumo (id_tarefa, id_insumo, quantidade_utilizada)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (id_tarefa, id_insumo)
+                 DO UPDATE SET quantidade_utilizada = tarefa_insumo.quantidade_utilizada + EXCLUDED.quantidade_utilizada`,
+                [idTarefa, item.id_insumo, item.quantidade]
+            );
+        }
+
+        await client.query('COMMIT');
+        transacaoIniciada = false;
+
+        res.status(201).json({
+            mensagem: 'Utilização de insumos registrada com sucesso na tarefa.',
+            id_tarefa: idTarefa,
+            insumos_registrados: insumosReq,
+            alertas: alertas.length ? alertas : undefined
+        });
+    } catch (err) {
+        if (transacaoIniciada) await client.query('ROLLBACK');
         throw err;
     } finally {
         client.release();
