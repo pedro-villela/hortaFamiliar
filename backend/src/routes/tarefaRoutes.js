@@ -59,6 +59,16 @@ function filtroStatus(req) {
 }
 
 function lerTarefa(body) {
+    const hora_inicio = hora(body.hora_inicio, 'hora_inicio');
+    const hora_fim = hora(body.hora_fim, 'hora_fim');
+
+    if (hora_fim.slice(0, 5) <= hora_inicio.slice(0, 5)) {
+        throw new ErroHttp(
+            400,
+            'O horário de término deve ser posterior ao horário de início.'
+        );
+    }
+
     return {
         id_usuario: inteiroPositivo(body.id_usuario, 'id_usuario'),
 
@@ -71,8 +81,8 @@ function lerTarefa(body) {
 
         descricao: texto(body.descricao, 'descricao', 255),
         data_tarefa: data(body.data_tarefa, 'data_tarefa'),
-        hora_inicio: hora(body.hora_inicio, 'hora_inicio'),
-        hora_fim: hora(body.hora_fim, 'hora_fim'),
+        hora_inicio,
+        hora_fim,
         status: opcao(
             body.status || 'PENDENTE',
             'status',
