@@ -48,8 +48,17 @@ function opcao(valor, campo, permitidos) {
 }
 
 function data(valor, campo) {
-    if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor) || Number.isNaN(Date.parse(valor))) {
+    if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
         throw new ErroHttp(400, `O "${campo}" deve estar no formato AAAA-MM-DD`);
+    }
+    const [ano, mes, dia] = valor.split('-').map(Number);
+    const dataReal = new Date(Date.UTC(ano, mes - 1, dia));
+    if (
+        dataReal.getUTCFullYear() !== ano ||
+        dataReal.getUTCMonth() !== mes - 1 ||
+        dataReal.getUTCDate() !== dia
+    ) {
+        throw new ErroHttp(400, `A data informada em "${campo}" não é válida.`);
     }
     return valor;
 }

@@ -1,4 +1,3 @@
-
 // Configuração principal da aplicação Express.
 const express = require('express');
 
@@ -15,6 +14,17 @@ const dashboardRoutes  = require('./routes/dashboardRoutes');
 const { naoEncontrado, tratarErros } = require('./middlewares/erros');
 
 const app = express();
+
+// Libera chamadas do Frontend (CORS) em outra porta ou domínio.
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    next();
+});
 
 // Permite receber JSON no corpo das requisições.
 app.use(express.json());

@@ -21,8 +21,10 @@ erDiagram
     TAREFA ||--o{ TAREFA_INSUMO_PENDENTE : "aguarda insumos"
     INSUMO ||--o{ TAREFA_INSUMO_PENDENTE : "aguarda utilizacao"
 
-    TAREFA ||--o{ TAREFA_APROVACAO_ESTOQUE : "possui aprovacao"
+    TAREFA ||--o{ TAREFA_FERRAMENTA : "reserva"
+    INSUMO ||--o{ TAREFA_FERRAMENTA : "e reservado em"
 
+    TAREFA ||--o{ TAREFA_APROVACAO_ESTOQUE : "possui aprovacao"
     USUARIO {
         INT id_usuario PK
         VARCHAR nome
@@ -91,12 +93,21 @@ erDiagram
         DECIMAL quantidade
     }
 
-    TAREFA_APROVACAO_ESTOQUE {
+  TAREFA_APROVACAO_ESTOQUE {
         INT id_aprovacao PK
         INT id_tarefa FK
         INT id_admin FK
         TIMESTAMP data_aprovacao
         TEXT observacao
+    }
+
+    TAREFA_FERRAMENTA {
+        INT id_tarefa PK, FK
+        INT id_insumo PK, FK
+        DECIMAL quantidade
+        TIMESTAMP inicio
+        TIMESTAMP fim
+        BOOLEAN ativa
     }
 ```
 
@@ -205,3 +216,16 @@ erDiagram
 | observacao | TEXT | NULL | Observação ou justificativa da aprovação |
 
 **Regra de negócio:** somente usuários com perfil ADMIN podem autorizar o consumo excepcional. Após a aprovação, os insumos pendentes são registrados como consumo efetivo, o estoque é atualizado e a tarefa passa para o status PENDENTE.
+
+### Tabela: tarefa_ferramenta
+
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| id_tarefa | INT | PK, FK, NOT NULL | Identificador da tarefa relacionada |
+| id_insumo | INT | PK, FK, NOT NULL | Identificador da ferramenta reservada |
+| quantidade | DECIMAL(10,2) | NOT NULL, CHECK > 0 | Quantidade reservada da ferramenta |
+| inicio | TIMESTAMP | NOT NULL | Data e horário de início da reserva |
+| fim | TIMESTAMP | NOT NULL | Data e horário de término da reserva |
+| ativa | BOOLEAN | NOT NULL, DEFAULT TRUE | Indica se a reserva está ativa no período |
+
+**Regra de negócio:** ferramentas são recursos reutilizáveis. A reserva bloqueia a disponibilidade no horário da tarefa sem descontar definitivamente o saldo da tabela `insumo`. Quando a tarefa é concluída ou cancelada, `ativa` passa para `FALSE`.

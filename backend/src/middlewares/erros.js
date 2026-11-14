@@ -7,7 +7,6 @@ function naoEncontrado(req, res) {
 }
 
 function tratarErros(err, req, res, next) {
-    console.error(err);
 
     if (err instanceof ErroHttp) {
         return res.status(err.status).json({ erro: err.message});
@@ -24,6 +23,7 @@ function tratarErros(err, req, res, next) {
         case '23514': return res.status(400).json({ erro: 'Valor rejeitado por uma regra de integridade do banco.', detalhe: err.constraint });
         case '23P01': return res.status(409).json({ erro: 'Conflito de agendamento: o canteiro já está ocupado neste horário.' });
         case '22P02': return res.status(400).json({ erro: 'Valor em formato inválido.' });
+        case '22008': return res.status(400).json({ erro: 'Valor em formato inválido.' });
     }
 
     // Erro inesperado.
