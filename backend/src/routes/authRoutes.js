@@ -84,7 +84,7 @@ router.post('/login', async (req, res, next) => {
         const usuario = select.rows[0];
         
         // Compara a senha informada com o hash
-        if (!usuario || !(bcrypt.compare( senha, usuario.senha ))) {
+        if (!usuario || !(await bcrypt.compare(senha, usuario.senha))) {
             throw new ErroHttp( 401, 'E-mail ou senha inválidos.' );
         }
 
