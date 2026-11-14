@@ -127,7 +127,7 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
             if (item.quantidade > estoque.quantidade_estoque) {
                 throw new ErroHttp(400, `Estoque insuficiente para '${estoque.nome}'. Disponível: ${estoque.quantidade_estoque}; solicitado: ${item.quantidade}.`);
             }
-            if ((estoque.quantidade_estoque - item.quantidade) < estoque.estoque_minimo) {
+            if ((estoque.quantidade_estoque - item.quantidade) <= estoque.estoque_minimo) {
                 alertas.push(`Atenção: o estoque de '${estoque.nome}' ficará abaixo do mínimo após este plantio.`);
             }
         }

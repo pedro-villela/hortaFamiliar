@@ -263,7 +263,7 @@ router.post('/', autorizar('ADMIN'), async (req, res) => {
                         `Estoque insuficiente para '${estoque.nome}'. Disponível: ${quantidadeDisponivel}; solicitado: ${item.quantidade}. A tarefa aguardará aprovação administrativa.`
                     );
                 } else if (
-                    quantidadeDisponivel - item.quantidade <
+                    quantidadeDisponivel - item.quantidade <=
                     Number(estoque.estoque_minimo)
                 ) {
                     alertas.push(
