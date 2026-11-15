@@ -1,12 +1,13 @@
-
 import { NavLink, useNavigate } from 'react-router-dom';
+import { limparSessao } from '../services/api';
 
 function MenuMembro() {
   const navigate = useNavigate();
 
   function sair() {
-    navigate('/dashboard');
-  }
+  limparSessao();
+  navigate('/login');
+}
 
   return (
     <aside className="menu-lateral">

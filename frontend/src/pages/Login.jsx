@@ -1,19 +1,33 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { requisicao, salvarSessao } from '../services/api';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
 
+  const [erro, setErro] = useState('');
+
   const navigate = useNavigate();
 
-  function entrar(evento) {
-    evento.preventDefault();
-
-    // Navegação simulada enquanto não usamos o backend
-    navigate('/dashboard');
+  async function entrar(evento) {
+  evento.preventDefault();
+  setErro('');
+  try {
+    const dados = await requisicao('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, senha }),
+    });
+    salvarSessao(dados.token, dados.usuario);
+    if (dados.usuario.perfil === 'ADMIN') {
+      navigate('/dashboard');
+    } else {
+      navigate('/minhas-tarefas');
+    }
+  } catch (err) {
+    setErro(err.message);
   }
+}
 
   return (
     <div className="login-container">
@@ -34,6 +48,8 @@ function Login() {
 
           <h2>Bem-vindo(a)!</h2>
           <p>Acesse sua conta para continuar.</p>
+
+          {erro && <p role="alert" style={{ color: '#b91c1c', fontWeight: 600 }}>{erro}</p>}
 
           <label htmlFor="email">E-mail</label>
           <input

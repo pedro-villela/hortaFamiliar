@@ -1,17 +1,37 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { requisicao, salvarSessao } from '../services/api';
 
 function Cadastro() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [perfil, setPerfil] = useState('MEMBRO');
+  const navigate = useNavigate();
   const [mensagem, setMensagem] = useState('');
 
-  function cadastrar(evento) {
+  async function cadastrar(evento) {
     evento.preventDefault();
+    setMensagem('');
+
+    if (senha !== confirmarSenha) {
+      setMensagem('As senhas não coincidem.');
+      return;
+    }
+
+    try {
+      const dados = await requisicao('/api/auth/registro', {
+        method: 'POST',
+        body: JSON.stringify({ nome, email, senha }),
+      });
+      salvarSessao(dados.token, dados.usuario);
+      navigate('/minhas-tarefas');
+    } catch (err) {
+      setMensagem(err.message);
+    }
+  }
 
     if (senha !== confirmarSenha) {
       setMensagem('As senhas não coincidem.');
@@ -85,21 +105,6 @@ function Cadastro() {
             required
           />
 
-          <label htmlFor="perfil">
-            Perfil
-          </label>
-          <select
-            id="perfil"
-            value={perfil}
-            onChange={(e) => setPerfil(e.target.value)}
-          >
-            <option value="MEMBRO">
-              Membro
-            </option>
-            <option value="ADMIN">
-              Administrador
-            </option>
-          </select>
 
           <button
             className="botao-entrar"

@@ -1,5 +1,8 @@
+import { obterUsuarioLogado } from '../services/api';
 
 function BarraSuperior() {
+  const usuario = obterUsuarioLogado();
+
   return (
     <header className="barra-superior">
       <input
@@ -11,8 +14,10 @@ function BarraSuperior() {
       <div className="usuario">
         <span>👤</span>
         <div>
-          <strong>Usuário</strong>
-          <small>Administrador</small>
+          <strong>{usuario?.nome || 'Usuário'}</strong>
+          <small>
+            {usuario?.perfil === 'ADMIN' ? 'Administrador' : 'Membro Operacional'}
+          </small>
         </div>
       </div>
     </header>

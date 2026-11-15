@@ -1,6 +1,6 @@
-
 import { NavLink, useNavigate } from 'react-router-dom';
 import './MenuLateral.css';
+import { limparSessao } from '../services/api';
 
 function MenuLateral() {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ function MenuLateral() {
   ];
 
   function sair() {
+    limparSessao();
     navigate('/login');
   }
 
