@@ -8,7 +8,7 @@
     "start": "node src/server.js",
     "db:setup": "node script/setup-db.js",
     "db:seed": "node script/seed-db.js",
-    "test": "jest"
+    "test": "jest --runInBand --forceExit"
   },
   "jest": {
     "testEnvironment": "node",

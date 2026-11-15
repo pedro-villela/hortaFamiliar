@@ -119,6 +119,15 @@ classDiagram
         +registrarAprovacao()
     }
 
+    class TarefaFerramenta {
+        +idTarefa: int
+        +idInsumo: int
+        +quantidade: decimal
+        +inicio: timestamp
+        +fim: timestamp
+        +ativa: bool
+    }
+
     Usuario "1" -- "N" Tarefa : recebe
     Usuario "1" -- "N" TarefaAprovacaoEstoque : autoriza
 
@@ -134,6 +143,9 @@ classDiagram
 
     Tarefa "1" -- "N" TarefaInsumoPendente : aguarda
     Insumo "1" -- "N" TarefaInsumoPendente : solicitado
+
+    Tarefa "1" -- "N" TarefaFerramenta : reserva
+    Insumo "1" -- "N" TarefaFerramenta : reservado em
 
     Tarefa "1" -- "N" TarefaAprovacaoEstoque : possui
 ```

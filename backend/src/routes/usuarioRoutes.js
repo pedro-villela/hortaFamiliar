@@ -189,20 +189,33 @@ router.delete('/:id', async (req, res) => {
         );
     }
 
-    const { rowCount } = await db.query(
-        `DELETE FROM usuario
-         WHERE id_usuario = $1`,
-        [id]
-    );
-
-    if (rowCount === 0) {
-        throw new ErroHttp(
-            404,
-            'Usuário não encontrado.'
+    try {
+        const { rowCount } = await db.query(
+            `DELETE FROM usuario
+             WHERE id_usuario = $1`,
+            [id]
         );
-    }
 
-    res.status(204).end();
+        if (rowCount === 0) {
+            throw new ErroHttp(
+                404,
+                'Usuário não encontrado.'
+            );
+        }
+
+        res.status(204).end();
+
+    } catch (erro) {
+        // O banco possui tarefas ou aprovações relacionadas ao usuário.
+        if (erro.code === '23503') {
+            throw new ErroHttp(
+                409,
+                'Não é possível excluir este usuário porque existem tarefas ou aprovações vinculadas a ele.'
+            );
+        }
+
+        throw erro;
+    }
 });
 
 module.exports = router;

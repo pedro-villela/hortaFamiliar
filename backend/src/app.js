@@ -1,4 +1,3 @@
-
 // Configuração principal da aplicação Express.
 const express = require('express');
 
@@ -16,9 +15,9 @@ const { naoEncontrado, tratarErros } = require('./middlewares/erros');
 
 const app = express();
 
-// Libera CORS para o Frontend (Vite na porta 5173).
+// Libera chamadas do Frontend (CORS) em outra porta ou domínio.
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') {
