@@ -5,7 +5,7 @@ function MenuMembro() {
   const navigate = useNavigate();
 
   function sair() {
-    navigate('/login');
+    navigate('/dashboard');
   }
 
   return (

@@ -15,7 +15,10 @@ function MenuLateral() {
     { nome: 'Relatórios', caminho: '/relatorios' },
     { nome: 'Movimentações', caminho: '/movimentacoes' },
     { nome: 'Colheitas', caminho: '/colheitas' },
-    { nome: 'Produção', caminho: '/producao' }
+    { nome: 'Produção', caminho: '/producao' },
+
+    // Acesso à área do membro
+    { nome: 'Área do Membro', caminho: '/minhas-tarefas' }
   ];
 
   function sair() {

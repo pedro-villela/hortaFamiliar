@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
 import './Dashboard.css';
@@ -25,21 +26,29 @@ function carregarDados() {
 }
 
 function Dashboard() {
+  const location = useLocation();
+
   const [dados, setDados] = useState(carregarDados);
 
   useEffect(() => {
-    function atualizarDados() {
-      setDados(carregarDados());
-    }
+  function atualizarDados() {
+    setDados(carregarDados());
+  }
 
-    window.addEventListener('focus', atualizarDados);
-    window.addEventListener('storage', atualizarDados);
+  // Atualiza ao entrar ou retornar ao Dashboard.
+  atualizarDados();
 
-    return () => {
-      window.removeEventListener('focus', atualizarDados);
-      window.removeEventListener('storage', atualizarDados);
-    };
-  }, []);
+  // Atualiza quando a janela recebe foco
+  // ou quando outra aba altera o localStorage.
+  window.addEventListener('focus', atualizarDados);
+  window.addEventListener('storage', atualizarDados);
+
+  return () => {
+    window.removeEventListener('focus', atualizarDados);
+    window.removeEventListener('storage', atualizarDados);
+  };
+}, [location.key]);
+
 
   const {
     culturas,
@@ -66,7 +75,7 @@ function Dashboard() {
 
   const insumosBaixos = insumos.filter(
     (insumo) =>
-      Number(insumo.quantidade) <
+      Number(insumo.quantidade) <=
       Number(insumo.estoqueMinimo)
   ).length;
 

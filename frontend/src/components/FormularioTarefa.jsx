@@ -171,8 +171,9 @@ function FormularioTarefa({
         </button>
 
         <button type="submit" className="botao-verde">
-          SALVAR
+         {editando ? 'SALVAR ALTERAÇÕES' : 'VERIFICAR DISPONIBILIDADE'}
         </button>
+
       </div>
     </form>
   );

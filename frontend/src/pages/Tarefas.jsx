@@ -3,6 +3,7 @@ import { useState } from 'react';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
 import FormularioTarefa from '../components/FormularioTarefa';
+import ValidacaoRecursos from '../components/ValidacaoRecursos';
 import './Culturas.css';
 import './Tarefas.css';
 
@@ -63,6 +64,7 @@ function Tarefas() {
   const [formularioAberto, setFormularioAberto] = useState(false);
   const [idEditando, setIdEditando] = useState(null);
   const [formulario, setFormulario] = useState(formularioVazio);
+  const [validacao, setValidacao] = useState(null);
 
   function atualizarTarefas(lista) {
     setTarefas(lista);
@@ -70,12 +72,14 @@ function Tarefas() {
   }
 
   function novaTarefa() {
+    setValidacao(null);
     setIdEditando(null);
     setFormulario({ ...formularioVazio });
     setFormularioAberto(true);
   }
 
   function editar(tarefa) {
+    setValidacao(null);
     setIdEditando(tarefa.id);
 
     setFormulario({
@@ -99,84 +103,103 @@ function Tarefas() {
     setFormularioAberto(true);
   }
 
-  function salvar(evento) {
-    evento.preventDefault();
-
-    const titulo = formulario.titulo.trim();
+ 
+  function verificarRecursos() {
+    const conflitos = [];
 
     const canteiro = canteiros.find(
-      (item) => String(item.id) === formulario.canteiroId
+      (item) => String(item.id) === String(formulario.canteiroId)
     );
 
     const responsavel = membros.find(
-      (item) => String(item.id) === formulario.responsavelId
+      (item) => String(item.id) === String(formulario.responsavelId)
     );
 
+    const insumo = formulario.insumoId
+      ? insumos.find(
+          (item) => String(item.id) === String(formulario.insumoId)
+        )
+      : null;
+
+    const titulo = formulario.titulo.trim();
+
     if (!titulo || !canteiro || !responsavel || !formulario.data) {
-      alert('Preencha os campos obrigatórios.');
-      return;
+      conflitos.push('Preencha todos os campos obrigatórios.');
     }
 
-    if (formulario.inicio >= formulario.fim) {
-      alert('O horário de término deve ser posterior ao início.');
-      return;
+    if (
+      !formulario.inicio ||
+      !formulario.fim ||
+      formulario.inicio >= formulario.fim
+    ) {
+      conflitos.push(
+        'O horário de término deve ser posterior ao início.'
+      );
     }
 
-    // Verifica conflito de horários no mesmo canteiro
-    const conflito = tarefas.some((tarefa) =>
+    const conflitoHorario = tarefas.some((tarefa) =>
       tarefa.id !== idEditando &&
       tarefa.status !== 'CONCLUÍDA' &&
       formulario.status !== 'CONCLUÍDA' &&
-      String(tarefa.canteiroId) === formulario.canteiroId &&
+      String(tarefa.canteiroId) === String(formulario.canteiroId) &&
       tarefa.data === formulario.data &&
       formulario.inicio < tarefa.fim &&
       formulario.fim > tarefa.inicio
     );
 
-    if (conflito) {
-      alert(
+    if (conflitoHorario) {
+      conflitos.push(
         'Já existe uma tarefa agendada neste canteiro e horário.'
       );
-      return;
     }
 
-    let quantidadeInsumo = 0;
+    const quantidadeInsumo = Number(formulario.quantidadeInsumo);
 
     if (formulario.insumoId) {
-      const insumo = insumos.find(
-        (item) => String(item.id) === formulario.insumoId
-      );
-
-      quantidadeInsumo = Number(formulario.quantidadeInsumo);
-
       if (
         !insumo ||
         formulario.quantidadeInsumo === '' ||
         !Number.isFinite(quantidadeInsumo) ||
         quantidadeInsumo <= 0
       ) {
-        alert('Informe uma quantidade válida de insumo.');
-        return;
-      }
-
-      if (quantidadeInsumo > insumo.quantidade) {
-        alert('Quantidade solicitada maior que o estoque disponível.');
-        return;
+        conflitos.push('Informe uma quantidade válida de insumo.');
+      } else if (quantidadeInsumo > Number(insumo.quantidade)) {
+        conflitos.push(
+          'Quantidade solicitada maior que o estoque disponível.'
+        );
       }
     }
 
+    return {
+      conflitos,
+      canteiro,
+      responsavel,
+      insumo
+    };
+  }
+
+  function gravarTarefa() {
+    const resultado = verificarRecursos();
+
+    if (resultado.conflitos.length > 0) {
+      setValidacao(resultado);
+      return;
+    }
+
     const dados = {
-      titulo,
+      titulo: formulario.titulo.trim(),
       descricao: formulario.descricao.trim(),
-      canteiroId: canteiro.id,
-      responsavelId: responsavel.id,
+      canteiroId: resultado.canteiro.id,
+      responsavelId: resultado.responsavel.id,
       data: formulario.data,
       inicio: formulario.inicio,
       fim: formulario.fim,
       prioridade: formulario.prioridade,
       status: formulario.status,
       insumoId: formulario.insumoId || null,
-      quantidadeInsumo
+      quantidadeInsumo: formulario.insumoId
+        ? Number(formulario.quantidadeInsumo)
+        : 0
     };
 
     if (idEditando !== null) {
@@ -190,13 +213,47 @@ function Tarefas() {
     } else {
       atualizarTarefas([
         ...tarefas,
-        { id: crypto.randomUUID(), ...dados }
+        {
+          id: crypto.randomUUID(),
+          ...dados
+        }
       ]);
     }
 
     setFormularioAberto(false);
     setIdEditando(null);
+    setValidacao(null);
+    setFormulario({ ...formularioVazio });
   }
+
+  function salvar(evento) {
+    evento.preventDefault();
+
+    const resultado = verificarRecursos();
+
+    if (idEditando !== null) {
+      if (resultado.conflitos.length > 0) {
+        alert(resultado.conflitos.join('\n'));
+        return;
+      }
+
+      gravarTarefa();
+      return;
+    }
+
+    setValidacao(resultado);
+    setFormularioAberto(false);
+  }
+
+  function voltarParaFormulario() {
+    setValidacao(null);
+    setFormularioAberto(true);
+  }
+
+  function confirmarTarefa() {
+    gravarTarefa();
+  }
+
 
   function excluir(tarefa) {
     if (window.confirm(`Excluir a tarefa "${tarefa.titulo}"?`)) {
@@ -304,6 +361,20 @@ function Tarefas() {
               editando={idEditando !== null}
             />
           )}
+
+         
+{validacao && (
+  <ValidacaoRecursos
+    tarefa={formulario}
+    canteiro={validacao.canteiro}
+    responsavel={validacao.responsavel}
+    insumo={validacao.insumo}
+    conflitos={validacao.conflitos}
+    voltar={voltarParaFormulario}
+    confirmar={confirmarTarefa}
+  />
+)}
+ 
 
           <div className="tabela-culturas-container">
             <table className="tabela-culturas">

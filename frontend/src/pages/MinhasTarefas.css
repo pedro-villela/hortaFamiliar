@@ -128,3 +128,66 @@
     min-width: 0;
   }
 }
+
+
+/* Estilos adicionais para os detalhes das tarefas */
+
+.botao-detalhes-tarefa {
+  background: #fff;
+  border: 1px solid #356646;
+  color: #356646;
+  border-radius: 6px;
+  padding: 11px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 10px;
+  margin-top: 12px;
+}
+
+.botao-detalhes-tarefa:hover {
+  background: #edf5ef;
+}
+
+.detalhes-minha-tarefa {
+  background: #fff;
+  border: 1px solid #e0e8e1;
+  border-radius: 10px;
+  padding: 28px;
+  margin-top: 24px;
+  max-width: 800px;
+}
+
+.detalhes-minha-tarefa h2 {
+  margin: 0 0 14px;
+}
+
+.detalhes-minha-tarefa p {
+  margin: 14px 0;
+  line-height: 1.5;
+}
+
+.acoes-detalhes-tarefa {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.confirmacao-minha-tarefa {
+  text-align: center;
+  padding: 25px 10px;
+}
+
+.confirmacao-minha-tarefa h2 {
+  color: #28633b;
+}
+
+@media (max-width: 600px) {
+  .detalhes-minha-tarefa {
+    padding: 18px;
+  }
+
+  .acoes-detalhes-tarefa {
+    flex-direction: column;
+  }
+}

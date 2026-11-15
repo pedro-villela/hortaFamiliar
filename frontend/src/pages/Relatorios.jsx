@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
 import './Relatorios.css';
@@ -64,9 +65,32 @@ function obterNome(lista, id) {
 }
 
 function Relatorios() {
+  const location = useLocation();
   const [dados, setDados] = useState(carregarDados);
+
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
+
+  useEffect(() => {
+  function atualizarDados() {
+    setDados(carregarDados());
+  }
+
+  // Atualiza quando o usuário entra ou retorna à página.
+  atualizarDados();
+
+  // Atualiza ao retornar para a janela.
+  window.addEventListener('focus', atualizarDados);
+
+  // Atualiza quando outra aba modifica o localStorage.
+  window.addEventListener('storage', atualizarDados);
+
+  return () => {
+    window.removeEventListener('focus', atualizarDados);
+    window.removeEventListener('storage', atualizarDados);
+  };
+}, [location.key]);
+
 
   const {
     tarefas,
