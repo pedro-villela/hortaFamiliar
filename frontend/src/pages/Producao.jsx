@@ -1,62 +1,45 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
+import { requisicao } from '../services/api';
 import './Producao.css';
 
-function lerDados(chave) {
-  try {
-    const dados = localStorage.getItem(chave);
-    const resultado = dados ? JSON.parse(dados) : [];
-    return Array.isArray(resultado) ? resultado : [];
-  } catch {
-    return [];
-  }
-}
-
 function Producao() {
-  const [colheitas] = useState(() =>
-    lerDados('horta_colheitas')
-  );
+  const [dados, setDados] = useState({
+    resumo: {
+      total_plantios: 0,
+      produtividade_total_kg: 0
+    },
+    produtividadePorCulturaECanteiro: []
+  });
 
-  const totalColheitas = colheitas.length;
-
-  const totalKg = colheitas
-    .filter((item) => item.unidade === 'kg')
-    .reduce(
-      (soma, item) => soma + Number(item.quantidade),
-      0
-    );
-
-  const totalUnidades = colheitas
-    .filter((item) => item.unidade === 'un')
-    .reduce(
-      (soma, item) => soma + Number(item.quantidade),
-      0
-    );
-
-  const producaoPorCultura = Object.values(
-    colheitas.reduce((acumulador, colheita) => {
-      const chave = `${colheita.culturaId}-${colheita.unidade}`;
-
-      if (!acumulador[chave]) {
-        acumulador[chave] = {
-          cultura: colheita.culturaNome,
-          unidade: colheita.unidade,
-          quantidade: 0,
-          colheitas: 0
-        };
+  useEffect(() => {
+    async function carregarProducao() {
+      try {
+        const resposta = await requisicao(
+          '/api/dashboard/producao?data_inicio=2000-01-01&data_fim=2099-12-31'
+        );
+        if (resposta) {
+          setDados(resposta);
+        }
+      } catch (err) {
+        alert(err.message);
       }
+    }
+    carregarProducao();
+  }, []);
 
-      acumulador[chave].quantidade += Number(
-        colheita.quantidade
-      );
-
-      acumulador[chave].colheitas += 1;
-
-      return acumulador;
-    }, {})
+  const totalColheitas = Number(
+    dados.resumo?.total_plantios ??
+      dados.resumo_geral?.total_plantios_colhidos ??
+      0
   );
+  const totalKg = Number(
+    dados.resumo?.produtividade_total_kg ??
+      dados.resumo_geral?.peso_total_colhido_kg ??
+      0
+  );
+  const linhas = dados.produtividadePorCulturaECanteiro || [];
 
   return (
     <div className="layout-admin">
@@ -69,7 +52,7 @@ function Producao() {
           <h1>Produção da Horta</h1>
 
           <p>
-            Acompanhe os resultados das colheitas registradas.
+            Acompanhe os resultados consolidados das colheitas registradas no banco de dados.
           </p>
 
           <section className="producao-indicadores">
@@ -84,41 +67,44 @@ function Producao() {
             </article>
 
             <article>
-              <span>Produção em unidades</span>
-              <strong>{totalUnidades} un</strong>
+              <span>Registros por cultura e canteiro</span>
+              <strong>{linhas.length}</strong>
             </article>
           </section>
 
           <section className="producao-tabela-card">
-            <h2>Produção por cultura</h2>
+            <h2>Produtividade por Cultura e Canteiro</h2>
 
             <div className="producao-tabela-container">
               <table>
                 <thead>
                   <tr>
                     <th>Cultura</th>
-                    <th>Quantidade produzida</th>
+                    <th>Canteiro</th>
+                    <th>Quantidade produzida (kg)</th>
+                    <th>Média por colheita (kg)</th>
                     <th>Número de colheitas</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {producaoPorCultura.map((item) => (
-                    <tr
-                      key={`${item.cultura}-${item.unidade}`}
-                    >
+                  {linhas.map((item) => (
+                    <tr key={`${item.id_cultura}-${item.id_canteiro}`}>
                       <td>{item.cultura}</td>
+                      <td>{item.canteiro}</td>
                       <td>
-                        {item.quantidade.toFixed(2)}{' '}
-                        {item.unidade}
+                        {Number(item.produtividade_total_kg).toFixed(2)} kg
                       </td>
-                      <td>{item.colheitas}</td>
+                      <td>
+                        {Number(item.produtividade_media_kg).toFixed(2)} kg
+                      </td>
+                      <td>{item.total_plantios}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {producaoPorCultura.length === 0 && (
+              {linhas.length === 0 && (
                 <p className="producao-vazio">
                   Nenhuma produção registrada.
                   Cadastre uma colheita para visualizar os dados.

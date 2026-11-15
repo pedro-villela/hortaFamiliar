@@ -1,50 +1,28 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
 import FormularioPlantio from '../components/FormularioPlantio';
+import { requisicao } from '../services/api';
 import './Culturas.css';
 import './Plantios.css';
-
-const culturasIniciais = [
-  { id: 1, nome: 'Alface', maturacao: 45 },
-  { id: 2, nome: 'Couve', maturacao: 60 },
-  { id: 3, nome: 'Tomate', maturacao: 90 },
-  { id: 4, nome: 'Cenoura', maturacao: 80 },
-  { id: 5, nome: 'Rúcula', maturacao: 35 }
-];
-
-const canteirosIniciais = [
-  { id: 1, nome: 'Canteiro A', area: 10, status: 'EM USO' },
-  { id: 2, nome: 'Canteiro B', area: 12, status: 'DISPONÍVEL' },
-  { id: 3, nome: 'Canteiro C', area: 8, status: 'EM USO' },
-  { id: 4, nome: 'Canteiro D', area: 15, status: 'EM PREPARO' },
-  { id: 5, nome: 'Canteiro E', area: 9, status: 'EM USO' }
-];
 
 const formularioVazio = {
   culturaId: '',
   canteiroId: '',
   dataPlantio: '',
-  status: 'PLANEJADO',
-  observacoes: ''
+  status: 'CRESCIMENTO',
+  pesoColhido: '',
+  insumoId: '',
+  quantidadeInsumo: ''
 };
 
-function lerDados(chave, dadosPadrao) {
-  try {
-    const dados = localStorage.getItem(chave);
-    return dados ? JSON.parse(dados) : dadosPadrao;
-  } catch {
-    return dadosPadrao;
-  }
-}
-
 function calcularColheita(dataPlantio, dias) {
-  if (!dataPlantio || !Number.isFinite(Number(dias))) {
+  const dataLimpa = dataPlantio ? String(dataPlantio).slice(0, 10) : '';
+  if (!dataLimpa || !Number.isFinite(Number(dias))) {
     return '-';
   }
 
-  const data = new Date(`${dataPlantio}T12:00:00`);
+  const data = new Date(`${dataLimpa}T12:00:00`);
   data.setDate(data.getDate() + Number(dias));
 
   const ano = data.getFullYear();
@@ -57,22 +35,16 @@ function calcularColheita(dataPlantio, dias) {
 function formatarData(data) {
   if (!data || data === '-') return '-';
 
-  const [ano, mes, dia] = data.split('-');
+  const dataLimpa = String(data).slice(0, 10);
+  const [ano, mes, dia] = dataLimpa.split('-');
   return `${dia}/${mes}/${ano}`;
 }
 
 function Plantios() {
-  const [culturas] = useState(() =>
-    lerDados('horta_culturas', culturasIniciais)
-  );
-
-  const [canteiros] = useState(() =>
-    lerDados('horta_canteiros', canteirosIniciais)
-  );
-
-  const [plantios, setPlantios] = useState(() =>
-    lerDados('horta_plantios', [])
-  );
+  const [culturas, setCulturas] = useState([]);
+  const [canteiros, setCanteiros] = useState([]);
+  const [insumos, setInsumos] = useState([]);
+  const [plantios, setPlantios] = useState([]);
 
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('TODOS');
@@ -80,10 +52,28 @@ function Plantios() {
   const [idEditando, setIdEditando] = useState(null);
   const [formulario, setFormulario] = useState(formularioVazio);
 
-  function atualizarPlantios(lista) {
-    setPlantios(lista);
-    localStorage.setItem('horta_plantios', JSON.stringify(lista));
+  async function carregarDados() {
+    try {
+      const [listaCulturas, listaCanteiros, listaInsumos, listaPlantios] =
+        await Promise.all([
+          requisicao('/api/culturas'),
+          requisicao('/api/canteiros'),
+          requisicao('/api/insumos'),
+          requisicao('/api/plantios')
+        ]);
+
+      setCulturas(Array.isArray(listaCulturas) ? listaCulturas : []);
+      setCanteiros(Array.isArray(listaCanteiros) ? listaCanteiros : []);
+      setInsumos(Array.isArray(listaInsumos) ? listaInsumos : []);
+      setPlantios(Array.isArray(listaPlantios) ? listaPlantios : []);
+    } catch (err) {
+      alert(err.message);
+    }
   }
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
 
   function novoPlantio() {
     setIdEditando(null);
@@ -92,118 +82,110 @@ function Plantios() {
   }
 
   function editar(plantio) {
-    setIdEditando(plantio.id);
+    setIdEditando(plantio.id_plantio);
 
     setFormulario({
-      culturaId: String(plantio.culturaId),
-      canteiroId: String(plantio.canteiroId),
-      dataPlantio: plantio.dataPlantio,
+      culturaId: String(plantio.id_cultura),
+      canteiroId: String(plantio.id_canteiro),
+      dataPlantio: String(plantio.data_plantio).slice(0, 10),
       status: plantio.status,
-      observacoes: plantio.observacoes || ''
+      pesoColhido: plantio.peso_colhido !== null && plantio.peso_colhido !== undefined
+        ? String(plantio.peso_colhido)
+        : '',
+      insumoId: '',
+      quantidadeInsumo: ''
     });
 
     setFormularioAberto(true);
   }
 
-  function salvar(evento) {
+  async function salvar(evento) {
     evento.preventDefault();
 
-    const cultura = culturas.find(
-      (item) => String(item.id) === formulario.culturaId
-    );
-
-    const canteiro = canteiros.find(
-      (item) => String(item.id) === formulario.canteiroId
-    );
-
-    if (!cultura || !canteiro || !formulario.dataPlantio) {
-      alert('Selecione uma cultura, um canteiro e uma data.');
-      return;
-    }
-
-    if (
-      formulario.status !== 'CONCLUÍDO' &&
-      canteiro.status === 'EM PREPARO'
-    ) {
-      alert('Este canteiro está em preparo e não pode receber plantios ativos.');
-      return;
-    }
-
-    const conflito = plantios.some(
-      (plantio) =>
-        String(plantio.canteiroId) === formulario.canteiroId &&
-        plantio.id !== idEditando &&
-        plantio.status !== 'CONCLUÍDO' &&
-        formulario.status !== 'CONCLUÍDO'
-    );
-
-    if (conflito) {
-      alert('Este canteiro já possui um plantio não concluído.');
-      return;
-    }
-
-    const dados = {
-      culturaId: cultura.id,
-      canteiroId: canteiro.id,
-      dataPlantio: formulario.dataPlantio,
-      previsaoColheita: calcularColheita(
-        formulario.dataPlantio,
-        cultura.maturacao
-      ),
+    const payload = {
+      id_cultura: Number(formulario.culturaId),
+      id_canteiro: Number(formulario.canteiroId),
+      data_plantio: formulario.dataPlantio,
       status: formulario.status,
-      observacoes: formulario.observacoes.trim()
+      peso_colhido:
+        formulario.pesoColhido !== '' ? Number(formulario.pesoColhido) : null
     };
 
-    if (idEditando !== null) {
-      atualizarPlantios(
-        plantios.map((plantio) =>
-          plantio.id === idEditando
-            ? { ...plantio, ...dados }
-            : plantio
-        )
-      );
-    } else {
-      atualizarPlantios([
-        ...plantios,
-        { id: crypto.randomUUID(), ...dados }
-      ]);
+    if (!idEditando && formulario.insumoId && formulario.quantidadeInsumo) {
+      payload.insumos = [
+        {
+          id_insumo: Number(formulario.insumoId),
+          quantidade: Number(formulario.quantidadeInsumo)
+        }
+      ];
     }
 
-    setFormularioAberto(false);
-    setIdEditando(null);
+    try {
+      if (idEditando !== null) {
+        await requisicao(`/api/plantios/${idEditando}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+      } else {
+        const resposta = await requisicao('/api/plantios', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (resposta?.alertas?.length > 0) {
+          alert(resposta.alertas.join('\n'));
+        }
+      }
+
+      await carregarDados();
+      setFormularioAberto(false);
+      setIdEditando(null);
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
-  function excluir(plantio) {
-    if (window.confirm('Deseja realmente excluir este plantio?')) {
-      atualizarPlantios(
-        plantios.filter((item) => item.id !== plantio.id)
-      );
+  async function excluir(plantio) {
+    if (!window.confirm('Deseja realmente excluir este plantio?')) return;
+    try {
+      await requisicao(`/api/plantios/${plantio.id_plantio}`, {
+        method: 'DELETE'
+      });
+      await carregarDados();
+    } catch (err) {
+      alert(err.message);
     }
   }
 
   function obterCultura(id) {
     return culturas.find(
-      (cultura) => String(cultura.id) === String(id)
+      (cultura) => String(cultura.id_cultura) === String(id)
     );
   }
 
   function obterCanteiro(id) {
     return canteiros.find(
-      (canteiro) => String(canteiro.id) === String(id)
+      (canteiro) => String(canteiro.id_canteiro) === String(id)
     );
   }
 
   const filtrados = plantios.filter((plantio) => {
-    const nomeCultura = obterCultura(plantio.culturaId)?.nome || '';
-    const nomeCanteiro = obterCanteiro(plantio.canteiroId)?.nome || '';
+    const nomeCultura =
+      plantio.cultura ||
+      plantio.cultura_nome ||
+      obterCultura(plantio.id_cultura)?.nome ||
+      '';
+    const nomeCanteiro =
+      plantio.canteiro ||
+      plantio.canteiro_identificacao ||
+      obterCanteiro(plantio.id_canteiro)?.identificacao ||
+      '';
 
     const correspondeBusca =
       nomeCultura.toLowerCase().includes(busca.toLowerCase()) ||
       nomeCanteiro.toLowerCase().includes(busca.toLowerCase());
 
     const correspondeStatus =
-      filtroStatus === 'TODOS' ||
-      plantio.status === filtroStatus;
+      filtroStatus === 'TODOS' || plantio.status === filtroStatus;
 
     return correspondeBusca && correspondeStatus;
   });
@@ -226,19 +208,19 @@ function Plantios() {
             </div>
 
             <div className="plantio-card">
-              <span>Em andamento</span>
+              <span>Em crescimento</span>
               <strong>
                 {plantios.filter(
-                  (item) => item.status === 'EM ANDAMENTO'
+                  (item) => item.status === 'CRESCIMENTO'
                 ).length}
               </strong>
             </div>
 
             <div className="plantio-card">
-              <span>Concluídos</span>
+              <span>Colhidos</span>
               <strong>
                 {plantios.filter(
-                  (item) => item.status === 'CONCLUÍDO'
+                  (item) => item.status === 'COLHIDO'
                 ).length}
               </strong>
             </div>
@@ -258,9 +240,9 @@ function Plantios() {
               aria-label="Filtrar plantios por status"
             >
               <option value="TODOS">Todos os status</option>
-              <option value="PLANEJADO">Planejado</option>
-              <option value="EM ANDAMENTO">Em andamento</option>
-              <option value="CONCLUÍDO">Concluído</option>
+              <option value="CRESCIMENTO">Em crescimento</option>
+              <option value="COLHIDO">Colhido</option>
+              <option value="PERDIDO">Perdido</option>
             </select>
 
             <button className="botao-verde" onClick={novoPlantio}>
@@ -274,6 +256,7 @@ function Plantios() {
               setFormulario={setFormulario}
               culturas={culturas}
               canteiros={canteiros}
+              insumos={insumos}
               salvar={salvar}
               cancelar={() => setFormularioAberto(false)}
               editando={idEditando !== null}
@@ -288,59 +271,81 @@ function Plantios() {
                   <th>Canteiro</th>
                   <th>Data do plantio</th>
                   <th>Previsão de colheita</th>
+                  <th>Peso colhido</th>
                   <th>Status</th>
                   <th>Ações</th>
                 </tr>
               </thead>
 
               <tbody>
-                {filtrados.map((plantio) => (
-                  <tr key={plantio.id}>
-                    <td>
-                      {obterCultura(plantio.culturaId)?.nome ||
-                        'Cultura não encontrada'}
-                    </td>
+                {filtrados.map((plantio) => {
+                  const culturaObj = obterCultura(plantio.id_cultura);
+                  const previsao = calcularColheita(
+                    plantio.data_plantio,
+                    culturaObj?.tempo_maturacao_dias
+                  );
 
-                    <td>
-                      {obterCanteiro(plantio.canteiroId)?.nome ||
-                        'Canteiro não encontrado'}
-                    </td>
+                  return (
+                    <tr key={plantio.id_plantio}>
+                      <td>
+                        {plantio.cultura ||
+                          plantio.cultura_nome ||
+                          culturaObj?.nome ||
+                          'Cultura não encontrada'}
+                      </td>
 
-                    <td>{formatarData(plantio.dataPlantio)}</td>
+                      <td>
+                        {plantio.canteiro ||
+                          plantio.canteiro_identificacao ||
+                          obterCanteiro(plantio.id_canteiro)?.identificacao ||
+                          'Canteiro não encontrado'}
+                      </td>
 
-                    <td>{formatarData(plantio.previsaoColheita)}</td>
+                      <td>{formatarData(plantio.data_plantio)}</td>
 
-                    <td>
-                      <span className={`status-plantio ${
-                        plantio.status === 'CONCLUÍDO'
-                          ? 'concluido'
-                          : plantio.status === 'EM ANDAMENTO'
-                          ? 'andamento'
-                          : 'planejado'
-                      }`}>
-                        {plantio.status}
-                      </span>
-                    </td>
+                      <td>{formatarData(previsao)}</td>
 
-                    <td>
-                      <button
-                        className="acao-tabela"
-                        onClick={() => editar(plantio)}
-                        aria-label="Editar plantio"
-                      >
-                        ✏️
-                      </button>
+                      <td>
+                        {plantio.peso_colhido !== null &&
+                        plantio.peso_colhido !== undefined
+                          ? `${plantio.peso_colhido} kg`
+                          : '-'}
+                      </td>
 
-                      <button
-                        className="acao-tabela"
-                        onClick={() => excluir(plantio)}
-                        aria-label="Excluir plantio"
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      <td>
+                        <span
+                          className={`status-plantio ${
+                            plantio.status === 'COLHIDO'
+                              ? 'concluido'
+                              : plantio.status === 'CRESCIMENTO'
+                              ? 'andamento'
+                              : 'planejado'
+                          }`}
+                        >
+                          {plantio.status}
+                        </span>
+                      </td>
+
+                      <td>
+                        <button
+                          className="acao-tabela"
+                          onClick={() => editar(plantio)}
+                          aria-label="Editar plantio"
+                        >
+                          ✏️
+                        </button>
+
+                        <button
+                          className="acao-tabela"
+                          onClick={() => excluir(plantio)}
+                          aria-label="Excluir plantio"
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 
@@ -357,4 +362,3 @@ function Plantios() {
 }
 
 export default Plantios;
-

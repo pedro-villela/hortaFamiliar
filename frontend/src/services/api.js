@@ -31,10 +31,17 @@ export async function requisicao(endpoint, opcoes = {}) {
     ...(opcoes.headers || {}),
   };
 
-  const resposta = await fetch(`${API_URL}${endpoint}`, {
-    ...opcoes,
-    headers,
-  });
+  let resposta;
+  try {
+    resposta = await fetch(`${API_URL}${endpoint}`, {
+      ...opcoes,
+      headers,
+    });
+  } catch {
+    throw new Error(
+      `Não foi possível conectar ao Backend (${API_URL}). Verifique se o servidor backend está rodando (npm run dev na pasta backend).`
+    );
+  }
 
   if (resposta.status === 204) return null;
 

@@ -16,6 +16,17 @@ const { naoEncontrado, tratarErros } = require('./middlewares/erros');
 
 const app = express();
 
+// Libera CORS para o Frontend (Vite na porta 5173).
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    next();
+});
+
 // Permite receber JSON no corpo das requisições.
 app.use(express.json());
 app.use((req, res, next) => {

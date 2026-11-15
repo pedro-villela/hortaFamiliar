@@ -1,27 +1,13 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
+import { requisicao } from '../services/api';
 import './Colheitas.css';
 
 const formularioInicial = {
   plantioId: '',
-  dataColheita: '',
-  quantidade: '',
-  unidade: 'kg',
-  observacoes: ''
+  quantidade: ''
 };
-
-function lerDados(chave) {
-  try {
-    const salvo = localStorage.getItem(chave);
-    const resultado = salvo ? JSON.parse(salvo) : [];
-
-    return Array.isArray(resultado) ? resultado : [];
-  } catch {
-    return [];
-  }
-}
 
 function formatarData(data) {
   if (!data) return '-';
@@ -31,32 +17,24 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`;
 }
 
-function obterNome(lista, id) {
-  return lista.find(
-    (item) => String(item.id) === String(id)
-  )?.nome || 'Não encontrado';
-}
-
 function Colheitas() {
-  const [plantios] = useState(() =>
-    lerDados('horta_plantios')
-  );
-
-  const [culturas] = useState(() =>
-    lerDados('horta_culturas')
-  );
-
-  const [canteiros] = useState(() =>
-    lerDados('horta_canteiros')
-  );
-
-  const [colheitas, setColheitas] = useState(() =>
-    lerDados('horta_colheitas')
-  );
-
+  const [plantios, setPlantios] = useState([]);
   const [formulario, setFormulario] = useState(formularioInicial);
   const [idEdicao, setIdEdicao] = useState(null);
   const [pesquisa, setPesquisa] = useState('');
+
+  async function carregarPlantios() {
+    try {
+      const lista = await requisicao('/api/plantios');
+      setPlantios(Array.isArray(lista) ? lista : []);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  useEffect(() => {
+    carregarPlantios();
+  }, []);
 
   function alterarCampo(evento) {
     const { name, value } = evento.target;
@@ -72,118 +50,50 @@ function Colheitas() {
     setIdEdicao(null);
   }
 
-  function salvarColheita(evento) {
+  async function salvarColheita(evento) {
     evento.preventDefault();
 
+    const plantioId = idEdicao || formulario.plantioId;
     const plantio = plantios.find(
-      (item) =>
-        String(item.id) === String(formulario.plantioId)
+      (p) => String(p.id_plantio) === String(plantioId)
     );
+    const quantidade = Number(formulario.quantidade);
 
     if (!plantio) {
       alert('Selecione um plantio válido.');
       return;
     }
 
-    if (plantio.status === 'PLANEJADO') {
-      alert(
-        'Não é possível registrar colheita de um plantio planejado.'
-      );
+    if (!Number.isFinite(quantidade) || quantidade <= 0) {
+      alert('Informe um peso colhido (kg) maior que zero.');
       return;
     }
 
-    const quantidade = Number(formulario.quantidade);
+    try {
+      await requisicao(`/api/plantios/${plantio.id_plantio}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          id_cultura: plantio.id_cultura,
+          id_canteiro: plantio.id_canteiro,
+          data_plantio: String(plantio.data_plantio).slice(0, 10),
+          status: 'COLHIDO',
+          peso_colhido: quantidade
+        })
+      });
 
-    if (
-      formulario.quantidade.trim() === '' ||
-      !Number.isFinite(quantidade) ||
-      quantidade <= 0
-    ) {
-      alert('Informe uma quantidade maior que zero.');
-      return;
+      await carregarPlantios();
+      limparFormulario();
+    } catch (err) {
+      alert(err.message);
     }
-
-    if (!formulario.dataColheita) {
-      alert('Informe a data da colheita.');
-      return;
-    }
-
-    if (formulario.dataColheita < plantio.dataPlantio) {
-      alert(
-        'A colheita não pode acontecer antes da data do plantio.'
-      );
-      return;
-    }
-
-    const hoje = new Date();
-    const dataLocal = [
-      hoje.getFullYear(),
-      String(hoje.getMonth() + 1).padStart(2, '0'),
-      String(hoje.getDate()).padStart(2, '0')
-    ].join('-');
-
-    if (formulario.dataColheita > dataLocal) {
-      alert('A data da colheita não pode estar no futuro.');
-      return;
-    }
-
-    const culturaNome = obterNome(
-      culturas,
-      plantio.culturaId
-    );
-
-    const canteiroNome = obterNome(
-      canteiros,
-      plantio.canteiroId
-    );
-
-    const registro = {
-      id: idEdicao || crypto.randomUUID(),
-      plantioId: plantio.id,
-      culturaId: plantio.culturaId,
-      canteiroId: plantio.canteiroId,
-      culturaNome,
-      canteiroNome,
-      dataColheita: formulario.dataColheita,
-      quantidade,
-      unidade: formulario.unidade,
-      observacoes: formulario.observacoes.trim()
-    };
-
-    let listaAtualizada;
-
-    if (idEdicao) {
-      listaAtualizada = colheitas.map((item) =>
-        item.id === idEdicao ? registro : item
-      );
-    } else {
-      listaAtualizada = [registro, ...colheitas];
-    }
-
-    localStorage.setItem(
-      'horta_colheitas',
-      JSON.stringify(listaAtualizada)
-    );
-
-    setColheitas(listaAtualizada);
-    limparFormulario();
-
-    alert(
-      idEdicao
-        ? 'Colheita atualizada com sucesso!'
-        : 'Colheita registrada com sucesso!'
-    );
   }
 
-  function editarColheita(colheita) {
-    setIdEdicao(colheita.id);
+  function editarColheita(plantio) {
+    setIdEdicao(plantio.id_plantio);
 
     setFormulario({
-      plantioId: String(colheita.plantioId),
-      dataColheita: colheita.dataColheita,
-      quantidade: String(colheita.quantidade),
-      unidade: colheita.unidade,
-      observacoes: colheita.observacoes || ''
+      plantioId: String(plantio.id_plantio),
+      quantidade: String(plantio.peso_colhido || '')
     });
 
     window.scrollTo({
@@ -192,59 +102,55 @@ function Colheitas() {
     });
   }
 
-  function excluirColheita(colheita) {
+  async function removerColheita(plantio) {
+    const nomeCultura = plantio.cultura || plantio.cultura_nome;
     const confirmar = window.confirm(
-      `Deseja excluir a colheita de ${colheita.culturaNome}?`
+      `Deseja reverter a colheita de ${nomeCultura} para EM CRESCIMENTO?`
     );
 
     if (!confirmar) return;
 
-    const listaAtualizada = colheitas.filter(
-      (item) => item.id !== colheita.id
-    );
+    try {
+      await requisicao(`/api/plantios/${plantio.id_plantio}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          id_cultura: plantio.id_cultura,
+          id_canteiro: plantio.id_canteiro,
+          data_plantio: String(plantio.data_plantio).slice(0, 10),
+          status: 'CRESCIMENTO',
+          peso_colhido: null
+        })
+      });
 
-    localStorage.setItem(
-      'horta_colheitas',
-      JSON.stringify(listaAtualizada)
-    );
-
-    setColheitas(listaAtualizada);
-
-    if (idEdicao === colheita.id) {
-      limparFormulario();
+      await carregarPlantios();
+      if (idEdicao === plantio.id_plantio) {
+        limparFormulario();
+      }
+    } catch (err) {
+      alert(err.message);
     }
   }
 
+  const colheitas = plantios.filter((p) => p.status === 'COLHIDO');
+
   const colheitasFiltradas = colheitas.filter((colheita) => {
     const texto = pesquisa.toLowerCase();
+    const culturaNome = colheita.cultura || colheita.cultura_nome || '';
+    const canteiroNome =
+      colheita.canteiro || colheita.canteiro_identificacao || '';
 
     return (
-      colheita.culturaNome.toLowerCase().includes(texto) ||
-      colheita.canteiroNome.toLowerCase().includes(texto)
+      culturaNome.toLowerCase().includes(texto) ||
+      canteiroNome.toLowerCase().includes(texto)
     );
   });
 
   const totalColheitas = colheitas.length;
 
-  // Soma somente colheitas registradas em quilogramas.
-  const totalKg = colheitas
-    .filter((item) => item.unidade === 'kg')
-    .reduce(
-      (soma, item) => soma + Number(item.quantidade),
-      0
-    );
-
-  // Soma somente colheitas registradas em unidades.
-  const totalUnidades = colheitas
-    .filter((item) => item.unidade === 'un')
-    .reduce(
-      (soma, item) => soma + Number(item.quantidade),
-      0
-    );
-
-  const plantiosComColheita = new Set(
-    colheitas.map((item) => String(item.plantioId))
-  ).size;
+  const totalKg = colheitas.reduce(
+    (soma, item) => soma + Number(item.peso_colhido || 0),
+    0
+  );
 
   return (
     <div className="layout-admin">
@@ -257,7 +163,7 @@ function Colheitas() {
           <header className="colheitas-cabecalho">
             <h1>Colheitas e Produção</h1>
             <p>
-              Registre e acompanhe a produção da horta.
+              Registre a colheita dos plantios e acompanhe o peso colhido em kg.
             </p>
           </header>
 
@@ -273,20 +179,17 @@ function Colheitas() {
             </article>
 
             <article>
-              <span>Produção em unidades</span>
-              <strong>{totalUnidades} un</strong>
-            </article>
-
-            <article>
-              <span>Plantios com colheita</span>
-              <strong>{plantiosComColheita}</strong>
+              <span>Plantios em crescimento</span>
+              <strong>
+                {plantios.filter((p) => p.status === 'CRESCIMENTO').length}
+              </strong>
             </article>
           </section>
 
           <section className="colheitas-formulario-card">
             <h2>
               {idEdicao
-                ? 'Editar colheita'
+                ? 'Editar peso da colheita'
                 : 'Registrar nova colheita'}
             </h2>
 
@@ -302,6 +205,7 @@ function Colheitas() {
                     name="plantioId"
                     value={formulario.plantioId}
                     onChange={alterarCampo}
+                    disabled={Boolean(idEdicao)}
                     required
                   >
                     <option value="">
@@ -311,43 +215,26 @@ function Colheitas() {
                     {plantios
                       .filter(
                         (plantio) =>
-                          plantio.status !== 'PLANEJADO'
+                          idEdicao
+                            ? plantio.id_plantio === idEdicao
+                            : plantio.status === 'CRESCIMENTO'
                       )
                       .map((plantio) => (
                         <option
-                          key={plantio.id}
-                          value={plantio.id}
+                          key={plantio.id_plantio}
+                          value={plantio.id_plantio}
                         >
-                          {obterNome(
-                            culturas,
-                            plantio.culturaId
-                          )} — {obterNome(
-                            canteiros,
-                            plantio.canteiroId
-                          )}
+                          {plantio.cultura || plantio.cultura_nome} —{' '}
+                          {plantio.canteiro || plantio.canteiro_identificacao}{' '}
+                          (Plantado em {formatarData(plantio.data_plantio)})
                         </option>
                       ))}
                   </select>
                 </div>
 
                 <div>
-                  <label htmlFor="colheita-data">
-                    Data da colheita
-                  </label>
-
-                  <input
-                    id="colheita-data"
-                    type="date"
-                    name="dataColheita"
-                    value={formulario.dataColheita}
-                    onChange={alterarCampo}
-                    required
-                  />
-                </div>
-
-                <div>
                   <label htmlFor="colheita-quantidade">
-                    Quantidade colhida
+                    Peso colhido (kg)
                   </label>
 
                   <input
@@ -355,43 +242,12 @@ function Colheitas() {
                     type="number"
                     name="quantidade"
                     min="0.01"
-                    step="any"
+                    step="0.01"
                     value={formulario.quantidade}
                     onChange={alterarCampo}
                     required
                   />
                 </div>
-
-                <div>
-                  <label htmlFor="colheita-unidade">
-                    Unidade
-                  </label>
-
-                  <select
-                    id="colheita-unidade"
-                    name="unidade"
-                    value={formulario.unidade}
-                    onChange={alterarCampo}
-                  >
-                    <option value="kg">Quilogramas (kg)</option>
-                    <option value="un">Unidades (un)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="colheitas-observacoes">
-                <label htmlFor="colheita-observacoes">
-                  Observações
-                </label>
-
-                <textarea
-                  id="colheita-observacoes"
-                  name="observacoes"
-                  rows="3"
-                  value={formulario.observacoes}
-                  onChange={alterarCampo}
-                  placeholder="Ex.: Colheita parcial, boa qualidade."
-                />
               </div>
 
               <div className="colheitas-acoes">
@@ -437,37 +293,26 @@ function Colheitas() {
                   <tr>
                     <th>Cultura</th>
                     <th>Canteiro</th>
-                    <th>Data</th>
-                    <th>Quantidade</th>
-                    <th>Observações</th>
+                    <th>Data do Plantio</th>
+                    <th>Peso Colhido</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {colheitasFiltradas.map((colheita) => (
-                    <tr key={colheita.id}>
-                      <td>{colheita.culturaNome}</td>
-                      <td>{colheita.canteiroNome}</td>
+                    <tr key={colheita.id_plantio}>
+                      <td>{colheita.cultura || colheita.cultura_nome}</td>
                       <td>
-                        {formatarData(
-                          colheita.dataColheita
-                        )}
+                        {colheita.canteiro || colheita.canteiro_identificacao}
                       </td>
-                      <td>
-                        {colheita.quantidade}{' '}
-                        {colheita.unidade}
-                      </td>
-                      <td>
-                        {colheita.observacoes || '-'}
-                      </td>
+                      <td>{formatarData(colheita.data_plantio)}</td>
+                      <td>{Number(colheita.peso_colhido || 0).toFixed(2)} kg</td>
                       <td>
                         <div className="colheitas-botoes-tabela">
                           <button
                             type="button"
-                            onClick={() =>
-                              editarColheita(colheita)
-                            }
+                            onClick={() => editarColheita(colheita)}
                           >
                             Editar
                           </button>
@@ -475,11 +320,9 @@ function Colheitas() {
                           <button
                             type="button"
                             className="colheitas-excluir"
-                            onClick={() =>
-                              excluirColheita(colheita)
-                            }
+                            onClick={() => removerColheita(colheita)}
                           >
-                            Excluir
+                            Reverter
                           </button>
                         </div>
                       </td>

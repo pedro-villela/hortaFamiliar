@@ -1,4 +1,3 @@
-
 function FormularioInsumo({
   formulario,
   setFormulario,
@@ -29,17 +28,16 @@ function FormularioInsumo({
         required
       />
 
-      <label htmlFor="categoria-insumo">Categoria</label>
+      <label htmlFor="categoria-insumo">Categoria (Tipo)</label>
       <select
         id="categoria-insumo"
         name="categoria"
         value={formulario.categoria}
         onChange={alterarCampo}
       >
-        <option value="Sementes">Sementes</option>
-        <option value="Fertilizantes">Fertilizantes</option>
-        <option value="Ferramentas">Ferramentas</option>
-        <option value="Outros">Outros</option>
+        <option value="SEMENTE">Semente</option>
+        <option value="FERTILIZANTE">Fertilizante</option>
+        <option value="FERRAMENTA">Ferramenta</option>
       </select>
 
       <label htmlFor="quantidade-insumo">Quantidade disponível</label>
@@ -53,20 +51,6 @@ function FormularioInsumo({
         onChange={alterarCampo}
         required
       />
-
-      <label htmlFor="unidade-insumo">Unidade de medida</label>
-      <select
-        id="unidade-insumo"
-        name="unidade"
-        value={formulario.unidade}
-        onChange={alterarCampo}
-      >
-        <option value="un">Unidade (un)</option>
-        <option value="kg">Quilograma (kg)</option>
-        <option value="g">Grama (g)</option>
-        <option value="L">Litro (L)</option>
-        <option value="mL">Mililitro (mL)</option>
-      </select>
 
       <label htmlFor="minimo-insumo">Estoque mínimo</label>
       <input

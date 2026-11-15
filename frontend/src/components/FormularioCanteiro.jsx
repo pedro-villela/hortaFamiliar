@@ -35,41 +35,6 @@ function FormularioCanteiro({
         required
       />
 
-      <label htmlFor="status-canteiro">Status</label>
-      <select
-        id="status-canteiro"
-        value={formulario.status}
-        onChange={(e) =>
-          setFormulario({ ...formulario, status: e.target.value })
-        }
-      >
-        <option value="DISPONÍVEL">Disponível</option>
-        <option value="EM USO">Em uso</option>
-        <option value="EM PREPARO">Em preparo</option>
-      </select>
-
-      <label htmlFor="localizacao-canteiro">Localização</label>
-      <input
-        id="localizacao-canteiro"
-        value={formulario.localizacao}
-        onChange={(e) =>
-          setFormulario({ ...formulario, localizacao: e.target.value })
-        }
-        placeholder="Ex.: Setor norte da horta"
-        required
-      />
-
-      <label htmlFor="descricao-canteiro">Descrição</label>
-      <textarea
-        id="descricao-canteiro"
-        value={formulario.descricao}
-        onChange={(e) =>
-          setFormulario({ ...formulario, descricao: e.target.value })
-        }
-        placeholder="Descreva o canteiro..."
-        rows="4"
-      />
-
       <div className="formulario-botoes">
         <button
           type="button"

@@ -1,6 +1,4 @@
-
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { requisicao, salvarSessao } from '../services/api';
 
@@ -9,8 +7,8 @@ function Cadastro() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  const navigate = useNavigate();
   const [mensagem, setMensagem] = useState('');
+  const navigate = useNavigate();
 
   async function cadastrar(evento) {
     evento.preventDefault();
@@ -26,21 +24,21 @@ function Cadastro() {
         method: 'POST',
         body: JSON.stringify({ nome, email, senha }),
       });
-      salvarSessao(dados.token, dados.usuario);
-      navigate('/minhas-tarefas');
+
+      if (dados?.token && dados?.usuario) {
+        salvarSessao(dados.token, dados.usuario);
+        navigate('/minhas-tarefas');
+      } else {
+        const login = await requisicao('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, senha }),
+        });
+        salvarSessao(login.token, login.usuario);
+        navigate('/minhas-tarefas');
+      }
     } catch (err) {
       setMensagem(err.message);
     }
-  }
-
-    if (senha !== confirmarSenha) {
-      setMensagem('As senhas não coincidem.');
-      return;
-    }
-
-    setMensagem(
-      'Formulário validado! O cadastro será integrado ao backend.'
-    );
   }
 
   return (
@@ -82,7 +80,7 @@ function Cadastro() {
           />
 
           <label htmlFor="senha-cadastro">
-            Senha
+            Senha (mínimo 8 caracteres, letras e números)
           </label>
           <input
             id="senha-cadastro"
@@ -105,7 +103,6 @@ function Cadastro() {
             required
           />
 
-
           <button
             className="botao-entrar"
             type="submit"
@@ -114,7 +111,7 @@ function Cadastro() {
           </button>
 
           {mensagem && (
-            <p role="status">
+            <p role="status" style={{ color: '#b91c1c', fontWeight: 600 }}>
               {mensagem}
             </p>
           )}

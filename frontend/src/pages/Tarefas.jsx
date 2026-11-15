@@ -1,63 +1,28 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
 import FormularioTarefa from '../components/FormularioTarefa';
 import ValidacaoRecursos from '../components/ValidacaoRecursos';
+import { requisicao } from '../services/api';
 import './Culturas.css';
 import './Tarefas.css';
 
-const canteirosPadrao = [
-  { id: 1, nome: 'Canteiro A' },
-  { id: 2, nome: 'Canteiro B' },
-  { id: 3, nome: 'Canteiro C' },
-  { id: 4, nome: 'Canteiro D' },
-  { id: 5, nome: 'Canteiro E' }
-];
-
-const membrosPadrao = [
-  { id: 1, nome: 'Ana Silva' },
-  { id: 2, nome: 'Carlos Souza' },
-  { id: 3, nome: 'Mariana Costa' }
-];
-
 const formularioVazio = {
-  titulo: '',
   descricao: '',
   canteiroId: '',
   responsavelId: '',
   data: '',
   inicio: '',
   fim: '',
-  prioridade: 'MÉDIA',
-  status: 'PENDENTE',
   insumoId: '',
   quantidadeInsumo: ''
 };
 
-function lerDados(chave, padrao) {
-  try {
-    const salvos = localStorage.getItem(chave);
-    return salvos ? JSON.parse(salvos) : padrao;
-  } catch {
-    return padrao;
-  }
-}
-
 function Tarefas() {
-  const [canteiros] = useState(() =>
-    lerDados('horta_canteiros', canteirosPadrao)
-  );
-
-  const [insumos] = useState(() =>
-    lerDados('horta_insumos', [])
-  );
-
-  const [membros] = useState(membrosPadrao);
-
-  const [tarefas, setTarefas] = useState(() =>
-    lerDados('horta_tarefas', [])
-  );
+  const [canteiros, setCanteiros] = useState([]);
+  const [insumos, setInsumos] = useState([]);
+  const [membros, setMembros] = useState([]);
+  const [tarefas, setTarefas] = useState([]);
 
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('TODOS');
@@ -66,10 +31,28 @@ function Tarefas() {
   const [formulario, setFormulario] = useState(formularioVazio);
   const [validacao, setValidacao] = useState(null);
 
-  function atualizarTarefas(lista) {
-    setTarefas(lista);
-    localStorage.setItem('horta_tarefas', JSON.stringify(lista));
+  async function carregarDados() {
+    try {
+      const [listaCanteiros, listaInsumos, listaUsuarios, listaTarefas] =
+        await Promise.all([
+          requisicao('/api/canteiros'),
+          requisicao('/api/insumos'),
+          requisicao('/api/usuarios'),
+          requisicao('/api/tarefas')
+        ]);
+
+      setCanteiros(Array.isArray(listaCanteiros) ? listaCanteiros : []);
+      setInsumos(Array.isArray(listaInsumos) ? listaInsumos : []);
+      setMembros(Array.isArray(listaUsuarios) ? listaUsuarios : []);
+      setTarefas(Array.isArray(listaTarefas) ? listaTarefas : []);
+    } catch (err) {
+      alert(err.message);
+    }
   }
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
 
   function novaTarefa() {
     setValidacao(null);
@@ -80,50 +63,43 @@ function Tarefas() {
 
   function editar(tarefa) {
     setValidacao(null);
-    setIdEditando(tarefa.id);
+    setIdEditando(tarefa.id_tarefa);
 
     setFormulario({
-      titulo: tarefa.titulo,
-      descricao: tarefa.descricao,
-      canteiroId: String(tarefa.canteiroId),
-      responsavelId: String(tarefa.responsavelId),
-      data: tarefa.data,
-      inicio: tarefa.inicio,
-      fim: tarefa.fim,
-      prioridade: tarefa.prioridade,
-      status: tarefa.status,
-      insumoId: tarefa.insumoId
-        ? String(tarefa.insumoId)
-        : '',
-      quantidadeInsumo: tarefa.quantidadeInsumo
-        ? String(tarefa.quantidadeInsumo)
-        : ''
+      descricao: tarefa.descricao || '',
+      canteiroId: String(tarefa.id_canteiro),
+      responsavelId: String(tarefa.id_usuario),
+      data: String(tarefa.data_tarefa).slice(0, 10),
+      inicio: String(tarefa.hora_inicio).slice(0, 5),
+      fim: String(tarefa.hora_fim).slice(0, 5),
+      insumoId: '',
+      quantidadeInsumo: ''
     });
 
     setFormularioAberto(true);
   }
 
- 
   function verificarRecursos() {
     const conflitos = [];
+    const avisos = [];
 
     const canteiro = canteiros.find(
-      (item) => String(item.id) === String(formulario.canteiroId)
+      (item) => String(item.id_canteiro) === String(formulario.canteiroId)
     );
 
     const responsavel = membros.find(
-      (item) => String(item.id) === String(formulario.responsavelId)
+      (item) => String(item.id_usuario) === String(formulario.responsavelId)
     );
 
     const insumo = formulario.insumoId
       ? insumos.find(
-          (item) => String(item.id) === String(formulario.insumoId)
+          (item) => String(item.id_insumo) === String(formulario.insumoId)
         )
       : null;
 
-    const titulo = formulario.titulo.trim();
+    const descricao = formulario.descricao.trim();
 
-    if (!titulo || !canteiro || !responsavel || !formulario.data) {
+    if (!descricao || !canteiro || !responsavel || !formulario.data) {
       conflitos.push('Preencha todos os campos obrigatórios.');
     }
 
@@ -137,22 +113,6 @@ function Tarefas() {
       );
     }
 
-    const conflitoHorario = tarefas.some((tarefa) =>
-      tarefa.id !== idEditando &&
-      tarefa.status !== 'CONCLUÍDA' &&
-      formulario.status !== 'CONCLUÍDA' &&
-      String(tarefa.canteiroId) === String(formulario.canteiroId) &&
-      tarefa.data === formulario.data &&
-      formulario.inicio < tarefa.fim &&
-      formulario.fim > tarefa.inicio
-    );
-
-    if (conflitoHorario) {
-      conflitos.push(
-        'Já existe uma tarefa agendada neste canteiro e horário.'
-      );
-    }
-
     const quantidadeInsumo = Number(formulario.quantidadeInsumo);
 
     if (formulario.insumoId) {
@@ -163,67 +123,71 @@ function Tarefas() {
         quantidadeInsumo <= 0
       ) {
         conflitos.push('Informe uma quantidade válida de insumo.');
-      } else if (quantidadeInsumo > Number(insumo.quantidade)) {
-        conflitos.push(
-          'Quantidade solicitada maior que o estoque disponível.'
-        );
+      } else if (quantidadeInsumo > Number(insumo.quantidade_estoque)) {
+        if (insumo.tipo === 'FERRAMENTA') {
+          conflitos.push(
+            `Ferramenta "${insumo.nome}" não possui unidades suficientes em estoque.`
+          );
+        } else {
+          avisos.push(
+            `Estoque insuficiente de "${insumo.nome}". A tarefa será criada com status AGUARDANDO_APROVACAO para aprovação excepcional do Administrador.`
+          );
+        }
       }
     }
 
     return {
       conflitos,
+      avisos,
       canteiro,
       responsavel,
       insumo
     };
   }
 
-  function gravarTarefa() {
-    const resultado = verificarRecursos();
-
-    if (resultado.conflitos.length > 0) {
-      setValidacao(resultado);
-      return;
-    }
-
-    const dados = {
-      titulo: formulario.titulo.trim(),
+  async function gravarTarefa() {
+    const payload = {
+      id_usuario: Number(formulario.responsavelId),
+      id_canteiro: Number(formulario.canteiroId),
       descricao: formulario.descricao.trim(),
-      canteiroId: resultado.canteiro.id,
-      responsavelId: resultado.responsavel.id,
-      data: formulario.data,
-      inicio: formulario.inicio,
-      fim: formulario.fim,
-      prioridade: formulario.prioridade,
-      status: formulario.status,
-      insumoId: formulario.insumoId || null,
-      quantidadeInsumo: formulario.insumoId
-        ? Number(formulario.quantidadeInsumo)
-        : 0
+      data_tarefa: formulario.data,
+      hora_inicio: formulario.inicio,
+      hora_fim: formulario.fim
     };
 
-    if (idEditando !== null) {
-      atualizarTarefas(
-        tarefas.map((tarefa) =>
-          tarefa.id === idEditando
-            ? { ...tarefa, ...dados }
-            : tarefa
-        )
-      );
-    } else {
-      atualizarTarefas([
-        ...tarefas,
+    if (!idEditando && formulario.insumoId && formulario.quantidadeInsumo) {
+      payload.insumos = [
         {
-          id: crypto.randomUUID(),
-          ...dados
+          id_insumo: Number(formulario.insumoId),
+          quantidade: Number(formulario.quantidadeInsumo)
         }
-      ]);
+      ];
     }
 
-    setFormularioAberto(false);
-    setIdEditando(null);
-    setValidacao(null);
-    setFormulario({ ...formularioVazio });
+    try {
+      if (idEditando !== null) {
+        await requisicao(`/api/tarefas/${idEditando}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+      } else {
+        const resposta = await requisicao('/api/tarefas', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (resposta?.alertas?.length > 0) {
+          alert(resposta.alertas.join('\n'));
+        }
+      }
+
+      await carregarDados();
+      setFormularioAberto(false);
+      setIdEditando(null);
+      setValidacao(null);
+      setFormulario({ ...formularioVazio });
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   function salvar(evento) {
@@ -254,35 +218,66 @@ function Tarefas() {
     gravarTarefa();
   }
 
+  async function aprovarExcepcionalmente(tarefa) {
+    if (
+      !window.confirm(
+        `Aprovar excepcionalmente o estoque da tarefa "${tarefa.descricao}"?`
+      )
+    ) {
+      return;
+    }
 
-  function excluir(tarefa) {
-    if (window.confirm(`Excluir a tarefa "${tarefa.titulo}"?`)) {
-      atualizarTarefas(
-        tarefas.filter((item) => item.id !== tarefa.id)
+    try {
+      const resposta = await requisicao(
+        `/api/tarefas/${tarefa.id_tarefa}/aprovar-estoque`,
+        { method: 'POST' }
       );
+      if (resposta?.alertas?.length > 0) {
+        alert(resposta.alertas.join('\n'));
+      }
+      await carregarDados();
+    } catch (err) {
+      alert(err.message);
     }
   }
 
-  function obterNome(lista, id) {
-    return lista.find(
-      (item) => String(item.id) === String(id)
-    )?.nome || 'Não encontrado';
+  async function cancelarTarefa(tarefa) {
+    if (!window.confirm(`Cancelar a tarefa "${tarefa.descricao}"?`)) return;
+    try {
+      await requisicao(`/api/tarefas/${tarefa.id_tarefa}/cancelar`, {
+        method: 'PATCH'
+      });
+      await carregarDados();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function excluir(tarefa) {
+    if (!window.confirm(`Excluir a tarefa "${tarefa.descricao}"?`)) return;
+    try {
+      await requisicao(`/api/tarefas/${tarefa.id_tarefa}`, {
+        method: 'DELETE'
+      });
+      await carregarDados();
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   function formatarData(data) {
     if (!data) return '-';
-    const [ano, mes, dia] = data.split('-');
+    const [ano, mes, dia] = String(data).slice(0, 10).split('-');
     return `${dia}/${mes}/${ano}`;
   }
 
   const tarefasFiltradas = tarefas.filter((tarefa) => {
-    const correspondeBusca = tarefa.titulo
+    const correspondeBusca = (tarefa.descricao || '')
       .toLowerCase()
       .includes(busca.toLowerCase());
 
     const correspondeStatus =
-      filtroStatus === 'TODOS' ||
-      tarefa.status === filtroStatus;
+      filtroStatus === 'TODOS' || tarefa.status === filtroStatus;
 
     return correspondeBusca && correspondeStatus;
   });
@@ -316,10 +311,19 @@ function Tarefas() {
             </div>
 
             <div className="tarefa-card">
+              <span>Aguardando aprovação</span>
+              <strong>
+                {tarefas.filter(
+                  (item) => item.status === 'AGUARDANDO_APROVACAO'
+                ).length}
+              </strong>
+            </div>
+
+            <div className="tarefa-card">
               <span>Concluídas</span>
               <strong>
                 {tarefas.filter(
-                  (item) => item.status === 'CONCLUÍDA'
+                  (item) => item.status === 'CONCLUIDA'
                 ).length}
               </strong>
             </div>
@@ -340,8 +344,9 @@ function Tarefas() {
             >
               <option value="TODOS">Todos os status</option>
               <option value="PENDENTE">Pendente</option>
-              <option value="EM ANDAMENTO">Em andamento</option>
-              <option value="CONCLUÍDA">Concluída</option>
+              <option value="AGUARDANDO_APROVACAO">Aguardando aprovação</option>
+              <option value="CONCLUIDA">Concluída</option>
+              <option value="CANCELADA">Cancelada</option>
             </select>
 
             <button className="botao-verde" onClick={novaTarefa}>
@@ -362,30 +367,28 @@ function Tarefas() {
             />
           )}
 
-         
-{validacao && (
-  <ValidacaoRecursos
-    tarefa={formulario}
-    canteiro={validacao.canteiro}
-    responsavel={validacao.responsavel}
-    insumo={validacao.insumo}
-    conflitos={validacao.conflitos}
-    voltar={voltarParaFormulario}
-    confirmar={confirmarTarefa}
-  />
-)}
- 
+          {validacao && (
+            <ValidacaoRecursos
+              tarefa={formulario}
+              canteiro={validacao.canteiro}
+              responsavel={validacao.responsavel}
+              insumo={validacao.insumo}
+              conflitos={validacao.conflitos}
+              avisos={validacao.avisos}
+              voltar={voltarParaFormulario}
+              confirmar={confirmarTarefa}
+            />
+          )}
 
           <div className="tabela-culturas-container">
             <table className="tabela-culturas">
               <thead>
                 <tr>
-                  <th>Tarefa</th>
+                  <th>Descrição</th>
                   <th>Canteiro</th>
                   <th>Responsável</th>
                   <th>Data</th>
                   <th>Horário</th>
-                  <th>Prioridade</th>
                   <th>Status</th>
                   <th>Ações</th>
                 </tr>
@@ -393,40 +396,64 @@ function Tarefas() {
 
               <tbody>
                 {tarefasFiltradas.map((tarefa) => (
-                  <tr key={tarefa.id}>
-                    <td>{tarefa.titulo}</td>
+                  <tr key={tarefa.id_tarefa}>
+                    <td>{tarefa.descricao}</td>
+                    <td>{tarefa.local || tarefa.canteiro_identificacao}</td>
+                    <td>{tarefa.responsavel || tarefa.usuario_nome}</td>
+                    <td>{formatarData(tarefa.data_tarefa)}</td>
                     <td>
-                      {obterNome(canteiros, tarefa.canteiroId)}
+                      {String(tarefa.hora_inicio).slice(0, 5)} -{' '}
+                      {String(tarefa.hora_fim).slice(0, 5)}
                     </td>
                     <td>
-                      {obterNome(membros, tarefa.responsavelId)}
-                    </td>
-                    <td>{formatarData(tarefa.data)}</td>
-                    <td>{tarefa.inicio} - {tarefa.fim}</td>
-                    <td>{tarefa.prioridade}</td>
-                    <td>
-                      <span className={`status-tarefa ${
-                        tarefa.status === 'CONCLUÍDA'
-                          ? 'concluida'
-                          : tarefa.status === 'EM ANDAMENTO'
-                          ? 'andamento'
-                          : 'pendente'
-                      }`}>
+                      <span
+                        className={`status-tarefa ${
+                          tarefa.status === 'CONCLUIDA'
+                            ? 'concluida'
+                            : tarefa.status === 'AGUARDANDO_APROVACAO'
+                            ? 'andamento'
+                            : 'pendente'
+                        }`}
+                      >
                         {tarefa.status}
                       </span>
                     </td>
                     <td>
-                      <button
-                        className="acao-tabela"
-                        onClick={() => editar(tarefa)}
-                        aria-label={`Editar ${tarefa.titulo}`}
-                      >
-                        ✏️
-                      </button>
+                      {tarefa.status === 'AGUARDANDO_APROVACAO' && (
+                        <button
+                          className="botao-verde"
+                          onClick={() => aprovarExcepcionalmente(tarefa)}
+                          style={{ marginRight: '6px', padding: '4px 8px', fontSize: '12px' }}
+                        >
+                          ✓ Aprovar Estoque
+                        </button>
+                      )}
+                      {tarefa.status === 'PENDENTE' && (
+                        <button
+                          className="acao-tabela"
+                          onClick={() => editar(tarefa)}
+                          aria-label={`Editar ${tarefa.descricao}`}
+                          title="Editar tarefa"
+                        >
+                          ✏️
+                        </button>
+                      )}
+                      {(tarefa.status === 'PENDENTE' ||
+                        tarefa.status === 'AGUARDANDO_APROVACAO') && (
+                        <button
+                          className="acao-tabela"
+                          onClick={() => cancelarTarefa(tarefa)}
+                          aria-label={`Cancelar ${tarefa.descricao}`}
+                          title="Cancelar tarefa"
+                        >
+                          🚫
+                        </button>
+                      )}
                       <button
                         className="acao-tabela"
                         onClick={() => excluir(tarefa)}
-                        aria-label={`Excluir ${tarefa.titulo}`}
+                        aria-label={`Excluir ${tarefa.descricao}`}
+                        title="Excluir tarefa"
                       >
                         🗑️
                       </button>

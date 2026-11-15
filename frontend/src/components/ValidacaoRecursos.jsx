@@ -1,4 +1,3 @@
-
 import './ValidacaoRecursos.css';
 
 function ValidacaoRecursos({
@@ -7,6 +6,7 @@ function ValidacaoRecursos({
   responsavel,
   insumo,
   conflitos = [],
+  avisos = [],
   voltar,
   confirmar
 }) {
@@ -15,7 +15,7 @@ function ValidacaoRecursos({
   function formatarData(data) {
     if (!data) return '-';
 
-    const [ano, mes, dia] = data.split('-');
+    const [ano, mes, dia] = String(data).slice(0, 10).split('-');
     return `${dia}/${mes}/${ano}`;
   }
 
@@ -42,7 +42,7 @@ function ValidacaoRecursos({
         role="status"
       >
         {disponivel
-          ? '✓ Recursos disponíveis'
+          ? '✓ Recursos validados para envio'
           : '⚠ Foram encontrados conflitos'}
       </div>
 
@@ -50,7 +50,7 @@ function ValidacaoRecursos({
         <h3>Dados da tarefa</h3>
 
         <p>
-          <strong>Tarefa:</strong> {tarefa.titulo}
+          <strong>Descrição:</strong> {tarefa.descricao}
         </p>
 
         <p>
@@ -58,7 +58,7 @@ function ValidacaoRecursos({
         </p>
 
         <p>
-          <strong>Canteiro:</strong> {canteiro?.nome}
+          <strong>Canteiro:</strong> {canteiro?.identificacao}
         </p>
 
         <p>
@@ -73,11 +73,11 @@ function ValidacaoRecursos({
 
         <div className="validacao-recurso">
           <span>Canteiro</span>
-          <strong>{canteiro?.nome || 'Não encontrado'}</strong>
+          <strong>{canteiro?.identificacao || 'Não encontrado'}</strong>
         </div>
 
         <div className="validacao-recurso">
-          <span>Insumo</span>
+          <span>Insumo / Ferramenta</span>
           <strong>{insumo?.nome || 'Não necessário'}</strong>
         </div>
 
@@ -85,18 +85,25 @@ function ValidacaoRecursos({
           <>
             <div className="validacao-recurso">
               <span>Quantidade necessária</span>
-              <strong>
-                {tarefa.quantidadeInsumo} {insumo.unidade}
-              </strong>
+              <strong>{tarefa.quantidadeInsumo}</strong>
             </div>
 
             <div className="validacao-recurso">
               <span>Estoque disponível</span>
-              <strong>
-                {insumo.quantidade} {insumo.unidade}
-              </strong>
+              <strong>{insumo.quantidade_estoque}</strong>
             </div>
           </>
+        )}
+
+        {avisos.length > 0 && (
+          <div className="validacao-conflitos">
+            <h3>Avisos de Estoque (História #14)</h3>
+            <ul>
+              {avisos.map((aviso, indice) => (
+                <li key={indice}>{aviso}</li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {!disponivel && (

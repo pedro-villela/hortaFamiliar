@@ -1,91 +1,87 @@
-
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
+import { requisicao } from '../services/api';
 import './Dashboard.css';
-
-function lerDados(chave) {
-  try {
-    const dados = localStorage.getItem(chave);
-    const resultado = dados ? JSON.parse(dados) : [];
-    return Array.isArray(resultado) ? resultado : [];
-  } catch {
-    return [];
-  }
-}
-
-function carregarDados() {
-  return {
-    culturas: lerDados('horta_culturas'),
-    canteiros: lerDados('horta_canteiros'),
-    plantios: lerDados('horta_plantios'),
-    tarefas: lerDados('horta_tarefas'),
-    insumos: lerDados('horta_insumos')
-  };
-}
 
 function Dashboard() {
   const location = useLocation();
 
-  const [dados, setDados] = useState(carregarDados);
+  const [dados, setDados] = useState({
+    culturas: [],
+    canteiros: [],
+    plantios: [],
+    tarefas: [],
+    estoque: {
+      resumo: { insumos_em_risco: 0 },
+      estoque: []
+    }
+  });
 
   useEffect(() => {
-  function atualizarDados() {
-    setDados(carregarDados());
-  }
+    async function atualizarDados() {
+      try {
+        const [culturas, canteiros, plantios, tarefas, estoque] =
+          await Promise.all([
+            requisicao('/api/culturas'),
+            requisicao('/api/canteiros'),
+            requisicao('/api/plantios'),
+            requisicao('/api/tarefas'),
+            requisicao('/api/dashboard/estoque')
+          ]);
 
-  // Atualiza ao entrar ou retornar ao Dashboard.
-  atualizarDados();
+        setDados({
+          culturas: Array.isArray(culturas) ? culturas : [],
+          canteiros: Array.isArray(canteiros) ? canteiros : [],
+          plantios: Array.isArray(plantios) ? plantios : [],
+          tarefas: Array.isArray(tarefas) ? tarefas : [],
+          estoque: estoque || {
+            resumo: { insumos_em_risco: 0 },
+            estoque: []
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
 
-  // Atualiza quando a janela recebe foco
-  // ou quando outra aba altera o localStorage.
-  window.addEventListener('focus', atualizarDados);
-  window.addEventListener('storage', atualizarDados);
+    atualizarDados();
+  }, [location.key]);
 
-  return () => {
-    window.removeEventListener('focus', atualizarDados);
-    window.removeEventListener('storage', atualizarDados);
-  };
-}, [location.key]);
+  const { culturas, canteiros, plantios, tarefas, estoque } = dados;
 
-
-  const {
-    culturas,
-    canteiros,
-    plantios,
-    tarefas,
-    insumos
-  } = dados;
-
-  // Indicadores gerais.
   const totalCulturas = culturas.length;
 
-  const canteirosDisponiveis = canteiros.filter(
-    (canteiro) => canteiro.status === 'DISPONÍVEL'
-  ).length;
+  const canteirosEmUso = new Set(
+    plantios
+      .filter((p) => p.status === 'CRESCIMENTO')
+      .map((p) => p.id_canteiro)
+  ).size;
+
+  const canteirosDisponiveis = Math.max(0, canteiros.length - canteirosEmUso);
 
   const plantiosEmAndamento = plantios.filter(
-    (plantio) => plantio.status === 'EM ANDAMENTO'
+    (plantio) => plantio.status === 'CRESCIMENTO'
   ).length;
 
   const tarefasPendentes = tarefas.filter(
     (tarefa) => tarefa.status === 'PENDENTE'
   ).length;
 
-  const insumosBaixos = insumos.filter(
-    (insumo) =>
-      Number(insumo.quantidade) <=
-      Number(insumo.estoqueMinimo)
-  ).length;
+  const itensEstoque = estoque.estoque || estoque.itens_abaixo_do_minimo || [];
+  const itensEmRisco = itensEstoque.filter((item) => item.abaixo_do_minimo);
+  const insumosBaixos =
+    estoque.resumo?.insumos_em_risco ??
+    estoque.total_insumos_em_alerta ??
+    itensEmRisco.length;
 
   const tarefasConcluidas = tarefas.filter(
-    (tarefa) => tarefa.status === 'CONCLUÍDA'
+    (tarefa) => tarefa.status === 'CONCLUIDA'
   ).length;
 
-  // Dados do gráfico de tarefas.
-  const tarefasEmAndamento = tarefas.filter(
-    (tarefa) => tarefa.status === 'EM ANDAMENTO'
+  const tarefasAguardando = tarefas.filter(
+    (tarefa) => tarefa.status === 'AGUARDANDO_APROVACAO'
   ).length;
 
   const totalTarefas = tarefas.length;
@@ -108,7 +104,7 @@ function Dashboard() {
       icone: '🪴'
     },
     {
-      titulo: 'Plantios em andamento',
+      titulo: 'Plantios em crescimento',
       valor: plantiosEmAndamento,
       icone: '🌿'
     },
@@ -194,8 +190,8 @@ function Dashboard() {
 
                 <div className="dashboard-grafico-linha">
                   <div className="dashboard-grafico-info">
-                    <span>Em andamento</span>
-                    <strong>{tarefasEmAndamento}</strong>
+                    <span>Aguardando aprovação</span>
+                    <strong>{tarefasAguardando}</strong>
                   </div>
 
                   <div className="dashboard-barra-fundo">
@@ -203,7 +199,7 @@ function Dashboard() {
                       className="dashboard-barra andamento"
                       style={{
                         width: `${calcularPorcentagem(
-                          tarefasEmAndamento
+                          tarefasAguardando
                         )}%`
                       }}
                     />
@@ -242,15 +238,17 @@ function Dashboard() {
               </p>
 
               <div className="dashboard-lista-tarefas">
-                {tarefas.slice(-5).reverse().map((tarefa) => (
+                {tarefas.slice(0, 5).map((tarefa) => (
                   <div
                     className="dashboard-tarefa"
-                    key={tarefa.id}
+                    key={tarefa.id_tarefa}
                   >
                     <div>
-                      <strong>{tarefa.titulo}</strong>
+                      <strong>{tarefa.descricao}</strong>
                       <span>
-                        {tarefa.data || 'Sem data'}
+                        {tarefa.data_tarefa
+                          ? String(tarefa.data_tarefa).slice(0, 10)
+                          : 'Sem data'}
                       </span>
                     </div>
 
@@ -272,24 +270,20 @@ function Dashboard() {
           <section className="dashboard-painel dashboard-alertas">
             <h2>Alertas de estoque</h2>
 
-            {insumos
-              .filter(
-                (insumo) =>
-                  Number(insumo.quantidade) <
-                  Number(insumo.estoqueMinimo)
-              )
-              .map((insumo) => (
-                <div
-                  className="dashboard-alerta-item"
-                  key={insumo.id}
-                >
-                  <span>⚠️ {insumo.nome}</span>
+            {itensEmRisco.map((insumo) => (
+              <div
+                className="dashboard-alerta-item"
+                key={insumo.id_insumo}
+              >
+                <span>
+                  ⚠️ {insumo.nome} ({insumo.tipo})
+                </span>
 
-                  <strong>
-                    {insumo.quantidade} {insumo.unidade}
-                  </strong>
-                </div>
-              ))}
+                <strong>
+                  Estoque: {insumo.quantidade_estoque} (Mín: {insumo.estoque_minimo})
+                </strong>
+              </div>
+            ))}
 
             {insumosBaixos === 0 && (
               <p className="dashboard-sem-alertas">

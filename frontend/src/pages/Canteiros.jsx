@@ -1,47 +1,40 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
 import FormularioCanteiro from '../components/FormularioCanteiro';
+import { requisicao } from '../services/api';
 import './Culturas.css';
 import './Canteiros.css';
-
-const dadosIniciais = [
-  { id: 1, nome: 'Canteiro A', area: 10, cultura: 'Alface', status: 'EM USO', localizacao: 'Setor norte', descricao: '' },
-  { id: 2, nome: 'Canteiro B', area: 12, cultura: '-', status: 'DISPONÍVEL', localizacao: 'Setor sul', descricao: '' },
-  { id: 3, nome: 'Canteiro C', area: 8, cultura: 'Tomate', status: 'EM USO', localizacao: 'Setor leste', descricao: '' },
-  { id: 4, nome: 'Canteiro D', area: 15, cultura: '-', status: 'EM PREPARO', localizacao: 'Setor oeste', descricao: '' },
-  { id: 5, nome: 'Canteiro E', area: 9, cultura: 'Couve', status: 'EM USO', localizacao: 'Setor central', descricao: '' },
-];
 
 const formularioVazio = {
   nome: '',
   area: '',
-  status: 'DISPONÍVEL',
-  localizacao: '',
-  descricao: '',
 };
 
-function carregarCanteiros() {
-  try {
-    const salvos = localStorage.getItem('horta_canteiros');
-    return salvos ? JSON.parse(salvos) : dadosIniciais;
-  } catch {
-    return dadosIniciais;
-  }
-}
-
 function Canteiros() {
-  const [canteiros, setCanteiros] = useState(carregarCanteiros);
+  const [canteiros, setCanteiros] = useState([]);
+  const [plantios, setPlantios] = useState([]);
   const [busca, setBusca] = useState('');
   const [formularioAberto, setFormularioAberto] = useState(false);
   const [idEditando, setIdEditando] = useState(null);
   const [formulario, setFormulario] = useState(formularioVazio);
 
-  function atualizarCanteiros(lista) {
-    setCanteiros(lista);
-    localStorage.setItem('horta_canteiros', JSON.stringify(lista));
+  async function carregarCanteiros() {
+    try {
+      const [listaCanteiros, listaPlantios] = await Promise.all([
+        requisicao('/api/canteiros'),
+        requisicao('/api/plantios').catch(() => []),
+      ]);
+      setCanteiros(Array.isArray(listaCanteiros) ? listaCanteiros : []);
+      setPlantios(Array.isArray(listaPlantios) ? listaPlantios : []);
+    } catch (err) {
+      alert(err.message);
+    }
   }
+
+  useEffect(() => {
+    carregarCanteiros();
+  }, []);
 
   function novoCanteiro() {
     setIdEditando(null);
@@ -50,76 +43,57 @@ function Canteiros() {
   }
 
   function editar(canteiro) {
-    setIdEditando(canteiro.id);
+    setIdEditando(canteiro.id_canteiro);
     setFormulario({
-      nome: canteiro.nome,
-      area: String(canteiro.area),
-      status: canteiro.status,
-      localizacao: canteiro.localizacao,
-      descricao: canteiro.descricao,
+      nome: canteiro.identificacao,
+      area: String(canteiro.area_m2),
     });
     setFormularioAberto(true);
   }
 
-  function salvar(evento) {
+  async function salvar(evento) {
     evento.preventDefault();
 
-    const nome = formulario.nome.trim();
-    const area = Number(formulario.area);
-
-    if (!nome || !Number.isFinite(area) || area <= 0 || !formulario.localizacao.trim()) {
-      alert('Preencha os campos obrigatórios corretamente.');
-      return;
-    }
-
-    const duplicado = canteiros.some(
-      (canteiro) =>
-        canteiro.nome.toLowerCase() === nome.toLowerCase() &&
-        canteiro.id !== idEditando
-    );
-
-    if (duplicado) {
-      alert('Já existe um canteiro com esse nome.');
-      return;
-    }
-
-    const dados = {
-      nome,
-      area,
-      status: formulario.status,
-      localizacao: formulario.localizacao.trim(),
-      descricao: formulario.descricao.trim(),
+    const payload = {
+      identificacao: formulario.nome.trim(),
+      area_m2: Number(formulario.area),
     };
 
-    if (idEditando !== null) {
-      atualizarCanteiros(
-        canteiros.map((canteiro) =>
-          canteiro.id === idEditando
-            ? { ...canteiro, ...dados }
-            : canteiro
-        )
-      );
-    } else {
-      atualizarCanteiros([
-        ...canteiros,
-        { id: crypto.randomUUID(), ...dados, cultura: '-' },
-      ]);
-    }
+    try {
+      if (idEditando !== null) {
+        await requisicao(`/api/canteiros/${idEditando}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await requisicao('/api/canteiros', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      }
 
-    setFormularioAberto(false);
-    setIdEditando(null);
+      await carregarCanteiros();
+      setFormularioAberto(false);
+      setIdEditando(null);
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
-  function excluir(canteiro) {
-    if (window.confirm(`Excluir ${canteiro.nome}?`)) {
-      atualizarCanteiros(
-        canteiros.filter((item) => item.id !== canteiro.id)
-      );
+  async function excluir(canteiro) {
+    if (!window.confirm(`Excluir ${canteiro.identificacao}?`)) return;
+    try {
+      await requisicao(`/api/canteiros/${canteiro.id_canteiro}`, {
+        method: 'DELETE',
+      });
+      await carregarCanteiros();
+    } catch (err) {
+      alert(err.message);
     }
   }
 
   const filtrados = canteiros.filter((canteiro) =>
-    canteiro.nome.toLowerCase().includes(busca.toLowerCase())
+    canteiro.identificacao.toLowerCase().includes(busca.toLowerCase())
   );
 
   return (
@@ -169,27 +143,52 @@ function Canteiros() {
               </thead>
 
               <tbody>
-                {filtrados.map((canteiro) => (
-                  <tr key={canteiro.id}>
-                    <td>{canteiro.nome}</td>
-                    <td>{canteiro.area} m²</td>
-                    <td>{canteiro.cultura}</td>
-                    <td>
-                      <span className={`status-canteiro ${canteiro.status === 'DISPONÍVEL' ? 'disponivel' : canteiro.status === 'EM USO' ? 'em-uso' : 'em-preparo'}`}>
-                        {canteiro.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button className="acao-tabela" onClick={() => editar(canteiro)} aria-label={`Editar ${canteiro.nome}`}>
-                        ✏️
-                      </button>
+                {filtrados.map((canteiro) => {
+                  const plantioAtivo = plantios.find(
+                    (p) =>
+                      p.id_canteiro === canteiro.id_canteiro &&
+                      p.status === 'CRESCIMENTO'
+                  );
+                  const statusCanteiro = plantioAtivo ? 'EM USO' : 'DISPONÍVEL';
 
-                      <button className="acao-tabela" onClick={() => excluir(canteiro)} aria-label={`Excluir ${canteiro.nome}`}>
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                  return (
+                    <tr key={canteiro.id_canteiro}>
+                      <td>{canteiro.identificacao}</td>
+                      <td>{canteiro.area_m2} m²</td>
+                      <td>
+                        {plantioAtivo
+                          ? plantioAtivo.cultura || plantioAtivo.cultura_nome
+                          : '-'}
+                      </td>
+                      <td>
+                        <span
+                          className={`status-canteiro ${
+                            statusCanteiro === 'DISPONÍVEL' ? 'disponivel' : 'em-uso'
+                          }`}
+                        >
+                          {statusCanteiro}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="acao-tabela"
+                          onClick={() => editar(canteiro)}
+                          aria-label={`Editar ${canteiro.identificacao}`}
+                        >
+                          ✏️
+                        </button>
+
+                        <button
+                          className="acao-tabela"
+                          onClick={() => excluir(canteiro)}
+                          aria-label={`Excluir ${canteiro.identificacao}`}
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 

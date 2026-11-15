@@ -1,37 +1,8 @@
-
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import MenuLateral from '../components/MenuLateral';
 import BarraSuperior from '../components/BarraSuperior';
+import { requisicao } from '../services/api';
 import './Relatorios.css';
-
-const membrosPadrao = [
-  { id: 1, nome: 'Ana Silva' },
-  { id: 2, nome: 'Carlos Souza' },
-  { id: 3, nome: 'Mariana Costa' }
-];
-
-function lerDados(chave) {
-  try {
-    const dados = localStorage.getItem(chave);
-    const resultado = dados ? JSON.parse(dados) : [];
-
-    return Array.isArray(resultado) ? resultado : [];
-  } catch {
-    return [];
-  }
-}
-
-function carregarDados() {
-  return {
-    tarefas: lerDados('horta_tarefas'),
-    movimentacoes: lerDados('horta_movimentacoes'),
-    plantios: lerDados('horta_plantios'),
-    canteiros: lerDados('horta_canteiros'),
-    culturas: lerDados('horta_culturas'),
-    colheitas: lerDados('horta_colheitas')
-  };
-}
 
 function formatarData(data) {
   if (!data) return '-';
@@ -58,125 +29,84 @@ function dentroDoPeriodo(data, inicio, fim) {
   return true;
 }
 
-function obterNome(lista, id) {
-  return lista.find(
-    (item) => String(item.id) === String(id)
-  )?.nome || 'Não encontrado';
-}
-
 function Relatorios() {
-  const location = useLocation();
-  const [dados, setDados] = useState(carregarDados);
+  const [tarefas, setTarefas] = useState([]);
+  const [plantios, setPlantios] = useState([]);
+  const [producao, setProducao] = useState({
+    resumo: {
+      total_plantios: 0,
+      produtividade_total_kg: 0
+    },
+    produtividadePorCulturaECanteiro: []
+  });
 
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
 
-  useEffect(() => {
-  function atualizarDados() {
-    setDados(carregarDados());
+  async function carregarRelatorios(inicio = '', fim = '') {
+    try {
+      const inicioParam = inicio || '2000-01-01';
+      const fimParam = fim || '2099-12-31';
+
+      const [listaTarefas, listaPlantios, dadosProducao] = await Promise.all([
+        requisicao('/api/tarefas'),
+        requisicao('/api/plantios'),
+        requisicao(
+          `/api/dashboard/producao?data_inicio=${inicioParam}&data_fim=${fimParam}`
+        )
+      ]);
+
+      setTarefas(Array.isArray(listaTarefas) ? listaTarefas : []);
+      setPlantios(Array.isArray(listaPlantios) ? listaPlantios : []);
+      if (dadosProducao) {
+        setProducao(dadosProducao);
+      }
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
-  // Atualiza quando o usuário entra ou retorna à página.
-  atualizarDados();
+  useEffect(() => {
+    carregarRelatorios();
+  }, []);
 
-  // Atualiza ao retornar para a janela.
-  window.addEventListener('focus', atualizarDados);
-
-  // Atualiza quando outra aba modifica o localStorage.
-  window.addEventListener('storage', atualizarDados);
-
-  return () => {
-    window.removeEventListener('focus', atualizarDados);
-    window.removeEventListener('storage', atualizarDados);
-  };
-}, [location.key]);
-
-
-  const {
-    tarefas,
-    movimentacoes,
-    plantios,
-    canteiros,
-    culturas,
-    colheitas
-  } = dados;
-
-  // Para tarefas, o período considera a data agendada.
-  const tarefasFiltradas = tarefas.filter(
-    (tarefa) =>
-      dentroDoPeriodo(
-        tarefa.data,
-        dataInicial,
-        dataFinal
-      )
+  const tarefasFiltradas = tarefas.filter((tarefa) =>
+    dentroDoPeriodo(tarefa.data_tarefa, dataInicial, dataFinal)
   );
 
-  // Para movimentações, considera a data do registro.
-  const movimentacoesFiltradas = movimentacoes.filter(
-    (movimentacao) =>
-      dentroDoPeriodo(
-        movimentacao.data,
-        dataInicial,
-        dataFinal
-      )
+  const plantiosFiltrados = plantios.filter((plantio) =>
+    dentroDoPeriodo(plantio.data_plantio, dataInicial, dataFinal)
   );
 
-  // Para plantios, considera a data do plantio.
-  const plantiosFiltrados = plantios.filter(
-    (plantio) =>
-      dentroDoPeriodo(
-        plantio.dataPlantio,
-        dataInicial,
-        dataFinal
-      )
+  const colheitasFiltradas = plantiosFiltrados.filter(
+    (p) => p.status === 'COLHIDO'
   );
 
-  // As colheitas usam a data real da colheita, não a data do plantio.
-  const colheitasFiltradas = colheitas.filter((colheita) =>
-    dentroDoPeriodo(colheita.dataColheita, dataInicial, dataFinal)
+  const totalColheitas = Number(
+    producao.resumo?.total_plantios ??
+      producao.resumo_geral?.total_plantios_colhidos ??
+      0
   );
-
-  const totalColheitas = colheitasFiltradas.length;
-
-  const totalKg = colheitasFiltradas
-    .filter((colheita) => colheita.unidade === 'kg')
-    .reduce((soma, colheita) => soma + (Number(colheita.quantidade) || 0), 0);
-
-  const totalUnidades = colheitasFiltradas
-    .filter((colheita) => colheita.unidade === 'un')
-    .reduce((soma, colheita) => soma + (Number(colheita.quantidade) || 0), 0);
-
-  // Agrupamento por ID da cultura e unidade de medida.
-  const producaoPorCultura = Object.values(
-    colheitasFiltradas.reduce((acumulador, colheita) => {
-      const chave = `${colheita.culturaId}-${colheita.unidade}`;
-
-      if (!acumulador[chave]) {
-        acumulador[chave] = {
-          chave,
-          cultura: colheita.culturaNome || obterNome(culturas, colheita.culturaId),
-          unidade: colheita.unidade,
-          quantidade: 0,
-          colheitas: 0
-        };
-      }
-
-      acumulador[chave].quantidade += Number(colheita.quantidade) || 0;
-      acumulador[chave].colheitas += 1;
-      return acumulador;
-    }, {})
+  const totalKg = Number(
+    producao.resumo?.produtividade_total_kg ??
+      producao.resumo_geral?.peso_total_colhido_kg ??
+      0
   );
+  const producaoPorCultura =
+    producao.produtividadePorCulturaECanteiro ||
+    producao.producao_por_cultura ||
+    [];
 
   const tarefasConcluidas = tarefasFiltradas.filter(
-    (tarefa) => tarefa.status === 'CONCLUÍDA'
+    (tarefa) => tarefa.status === 'CONCLUIDA'
   ).length;
 
   const tarefasPendentes = tarefasFiltradas.filter(
     (tarefa) => tarefa.status === 'PENDENTE'
   ).length;
 
-  const tarefasEmAndamento = tarefasFiltradas.filter(
-    (tarefa) => tarefa.status === 'EM ANDAMENTO'
+  const tarefasAguardando = tarefasFiltradas.filter(
+    (tarefa) => tarefa.status === 'AGUARDANDO_APROVACAO'
   ).length;
 
   const totalTarefas = tarefasFiltradas.length;
@@ -189,21 +119,17 @@ function Relatorios() {
     ? (tarefasPendentes / totalTarefas) * 100
     : 0;
 
-  const percentualEmAndamento = totalTarefas
-    ? (tarefasEmAndamento / totalTarefas) * 100
+  const percentualAguardando = totalTarefas
+    ? (tarefasAguardando / totalTarefas) * 100
     : 0;
 
   function atualizarRelatorio() {
-    if (
-      dataInicial &&
-      dataFinal &&
-      dataInicial > dataFinal
-    ) {
+    if (dataInicial && dataFinal && dataInicial > dataFinal) {
       alert('A data inicial não pode ser maior que a final.');
       return;
     }
 
-    setDados(carregarDados());
+    carregarRelatorios(dataInicial, dataFinal);
   }
 
   function imprimirRelatorio() {
@@ -221,8 +147,7 @@ function Relatorios() {
           <header className="relatorios-cabecalho">
             <h1>Relatórios Gerenciais</h1>
             <p>
-              Acompanhe atividades, plantios, movimentações
-              e a produção da horta.
+              Acompanhe atividades, plantios e a produtividade consolidada da horta.
             </p>
           </header>
 
@@ -262,7 +187,7 @@ function Relatorios() {
               className="botao-verde"
               onClick={atualizarRelatorio}
             >
-              Atualizar dados
+              Filtrar / Atualizar
             </button>
 
             <button
@@ -286,12 +211,12 @@ function Relatorios() {
             </article>
 
             <article>
-              <span>Movimentações</span>
-              <strong>{movimentacoesFiltradas.length}</strong>
+              <span>Aguardando aprovação</span>
+              <strong>{tarefasAguardando}</strong>
             </article>
 
             <article>
-              <span>Plantios registrados</span>
+              <span>Plantios no período</span>
               <strong>{plantiosFiltrados.length}</strong>
             </article>
           </section>
@@ -308,8 +233,8 @@ function Relatorios() {
             </article>
 
             <article>
-              <span>Produção em unidades</span>
-              <strong>{totalUnidades} un</strong>
+              <span>Registros colhidos</span>
+              <strong>{producaoPorCultura.length}</strong>
             </article>
           </section>
 
@@ -325,9 +250,9 @@ function Relatorios() {
                   classe: 'concluidas'
                 },
                 {
-                  nome: 'Em andamento',
-                  valor: tarefasEmAndamento,
-                  percentual: percentualEmAndamento,
+                  nome: 'Aguardando aprovação',
+                  valor: tarefasAguardando,
+                  percentual: percentualAguardando,
                   classe: 'andamento'
                 },
                 {
@@ -360,13 +285,51 @@ function Relatorios() {
           </section>
 
           <section className="relatorios-secao">
+            <h2>Produtividade por Cultura e Canteiro (História #12)</h2>
+            <div className="relatorios-tabela-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cultura</th>
+                    <th>Canteiro</th>
+                    <th>Quantidade produzida (kg)</th>
+                    <th>Média por colheita (kg)</th>
+                    <th>Número de colheitas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {producaoPorCultura.map((item) => (
+                    <tr key={`${item.id_cultura}-${item.id_canteiro}`}>
+                      <td>{item.cultura || item.cultura_nome}</td>
+                      <td>{item.canteiro || item.canteiro_identificacao}</td>
+                      <td>
+                        {Number(
+                          item.produtividade_total_kg ?? item.peso_total_kg ?? 0
+                        ).toFixed(2)}{' '}
+                        kg
+                      </td>
+                      <td>
+                        {Number(item.produtividade_media_kg || 0).toFixed(2)} kg
+                      </td>
+                      <td>{item.total_plantios ?? item.total_colheitas}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {producaoPorCultura.length === 0 && (
+                <p className="relatorios-vazio">Nenhuma produção encontrada no período.</p>
+              )}
+            </div>
+          </section>
+
+          <section className="relatorios-secao">
             <h2>Relatório de tarefas</h2>
 
             <div className="relatorios-tabela-container">
               <table>
                 <thead>
                   <tr>
-                    <th>Tarefa</th>
+                    <th>Descrição</th>
                     <th>Responsável</th>
                     <th>Canteiro</th>
                     <th>Data</th>
@@ -376,21 +339,11 @@ function Relatorios() {
 
                 <tbody>
                   {tarefasFiltradas.map((tarefa) => (
-                    <tr key={tarefa.id}>
-                      <td>{tarefa.titulo}</td>
-                      <td>
-                        {obterNome(
-                          membrosPadrao,
-                          tarefa.responsavelId
-                        )}
-                      </td>
-                      <td>
-                        {obterNome(
-                          canteiros,
-                          tarefa.canteiroId
-                        )}
-                      </td>
-                      <td>{formatarData(tarefa.data)}</td>
+                    <tr key={tarefa.id_tarefa}>
+                      <td>{tarefa.descricao}</td>
+                      <td>{tarefa.responsavel || tarefa.usuario_nome}</td>
+                      <td>{tarefa.local || tarefa.canteiro_identificacao}</td>
+                      <td>{formatarData(tarefa.data_tarefa)}</td>
                       <td>{tarefa.status}</td>
                     </tr>
                   ))}
@@ -414,34 +367,25 @@ function Relatorios() {
                   <tr>
                     <th>Cultura</th>
                     <th>Canteiro</th>
-                    <th>Plantio</th>
-                    <th>Previsão de colheita</th>
+                    <th>Data do Plantio</th>
+                    <th>Peso Colhido</th>
                     <th>Status</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {plantiosFiltrados.map((plantio) => (
-                    <tr key={plantio.id}>
+                    <tr key={plantio.id_plantio}>
+                      <td>{plantio.cultura || plantio.cultura_nome}</td>
                       <td>
-                        {obterNome(
-                          culturas,
-                          plantio.culturaId
-                        )}
+                        {plantio.canteiro || plantio.canteiro_identificacao}
                       </td>
+                      <td>{formatarData(plantio.data_plantio)}</td>
                       <td>
-                        {obterNome(
-                          canteiros,
-                          plantio.canteiroId
-                        )}
-                      </td>
-                      <td>
-                        {formatarData(plantio.dataPlantio)}
-                      </td>
-                      <td>
-                        {formatarData(
-                          plantio.previsaoColheita
-                        )}
+                        {plantio.peso_colhido !== null &&
+                        plantio.peso_colhido !== undefined
+                          ? `${plantio.peso_colhido} kg`
+                          : '-'}
                       </td>
                       <td>{plantio.status}</td>
                     </tr>
@@ -458,93 +402,26 @@ function Relatorios() {
           </section>
 
           <section className="relatorios-secao">
-            <h2>Relatório de movimentações de estoque</h2>
-
-            <div className="relatorios-tabela-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Insumo</th>
-                    <th>Tipo</th>
-                    <th>Quantidade</th>
-                    <th>Origem</th>
-                    <th>Observação</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {movimentacoesFiltradas.map((mov) => (
-                    <tr key={mov.id}>
-                      <td>{formatarData(mov.data)}</td>
-                      <td>{mov.insumoNome}</td>
-                      <td>{mov.tipo}</td>
-                      <td>
-                        {mov.quantidade} {mov.unidade}
-                      </td>
-                      <td>{mov.origem || 'MANUAL'}</td>
-                      <td>{mov.observacao || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {movimentacoesFiltradas.length === 0 && (
-                <p className="relatorios-vazio">
-                  Nenhuma movimentação encontrada.
-                </p>
-              )}
-            </div>
-          </section>
-
-          <section className="relatorios-secao">
-            <h2>Produção por cultura</h2>
-            <div className="relatorios-tabela-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Cultura</th>
-                    <th>Quantidade produzida</th>
-                    <th>Número de colheitas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {producaoPorCultura.map((item) => (
-                    <tr key={item.chave}>
-                      <td>{item.cultura}</td>
-                      <td>{item.quantidade.toFixed(2)} {item.unidade}</td>
-                      <td>{item.colheitas}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {producaoPorCultura.length === 0 && (
-                <p className="relatorios-vazio">Nenhuma produção encontrada no período.</p>
-              )}
-            </div>
-          </section>
-
-          <section className="relatorios-secao">
             <h2>Histórico de colheitas</h2>
             <div className="relatorios-tabela-container">
               <table>
                 <thead>
                   <tr>
-                    <th>Data</th>
+                    <th>Data do Plantio</th>
                     <th>Cultura</th>
                     <th>Canteiro</th>
-                    <th>Quantidade</th>
-                    <th>Observações</th>
+                    <th>Quantidade Colhida</th>
                   </tr>
                 </thead>
                 <tbody>
                   {colheitasFiltradas.map((colheita) => (
-                    <tr key={colheita.id}>
-                      <td>{formatarData(colheita.dataColheita)}</td>
-                      <td>{colheita.culturaNome || obterNome(culturas, colheita.culturaId)}</td>
-                      <td>{colheita.canteiroNome || obterNome(canteiros, colheita.canteiroId)}</td>
-                      <td>{colheita.quantidade} {colheita.unidade}</td>
-                      <td>{colheita.observacoes || '-'}</td>
+                    <tr key={colheita.id_plantio}>
+                      <td>{formatarData(colheita.data_plantio)}</td>
+                      <td>{colheita.cultura || colheita.cultura_nome}</td>
+                      <td>
+                        {colheita.canteiro || colheita.canteiro_identificacao}
+                      </td>
+                      <td>{Number(colheita.peso_colhido || 0).toFixed(2)} kg</td>
                     </tr>
                   ))}
                 </tbody>
