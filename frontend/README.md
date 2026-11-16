@@ -1,99 +1,75 @@
-
 # Horta Familiar — Frontend
 
 ## 1. Sobre o projeto
 
-O Horta Familiar é um sistema web desenvolvido como projeto acadêmico da disciplina de Laboratório de Engenharia de Software da Fatec Ribeirão Preto.
+O **Horta Familiar** é um sistema web desenvolvido como projeto acadêmico da disciplina de Laboratório de Engenharia de Software da Fatec Ribeirão Preto.
 
-O objetivo é auxiliar na organização e no gerenciamento de uma horta familiar, permitindo o acompanhamento de culturas, canteiros, plantios, insumos, tarefas, colheitas e produção.
-
-Este diretório contém o frontend da aplicação, desenvolvido com React e Vite.
+O objetivo é auxiliar na organização e no gerenciamento de uma horta comunitária e familiar, permitindo o acompanhamento de culturas, canteiros, plantios, insumos, tarefas, colheitas, usuários e produtividade consolidada, integrado à API REST em `/backend` e ao banco de dados PostgreSQL.
 
 ## 2. Tecnologias utilizadas
 
-- React — construção das interfaces.
-- Vite — ambiente de desenvolvimento e compilação.
-- JavaScript — lógica e interatividade.
-- CSS — estilização das páginas e componentes.
-- React Router — navegação entre as telas.
-- localStorage — armazenamento temporário dos dados durante o desenvolvimento.
+- **React 18** — construção das interfaces e gerenciamento de estado.
+- **Vite 5** — ambiente de desenvolvimento e compilação de produção.
+- **React Router DOM 6** — roteamento e proteção de rotas por perfil (`ADMIN` e `OPERACIONAL`).
+- **Fetch API + JWT (`src/services/api.js`)** — comunicação autenticada com o Backend (`Authorization: Bearer <token>`).
+- **CSS3** — estilização responsiva das páginas e componentes.
 
-## 3. Funcionalidades implementadas
+## 3. Funcionalidades implementadas e integradas à API
 
-### Administração
+### Autenticação e Controle de Acesso (História #1)
+- **Login (`/login` -> `POST /api/auth/login`)**: Autentica o usuário, armazena o token JWT e redireciona automaticamente conforme o perfil (`ADMIN` -> `/dashboard`, `OPERACIONAL` -> `/minhas-tarefas`).
+- **Cadastro (`/cadastro` -> `POST /api/auth/registro`)**: Permite o auto-registro de novos membros operacionais.
+- **Proteção de Rotas (`RotaProtegida`)**: Bloqueia usuários não autenticados e impede que membros `OPERACIONAL` acessem rotas administrativas.
 
-- Login e cadastro.
-- Dashboard com indicadores gerais.
-- Cadastro e gerenciamento de culturas.
-- Cadastro e gerenciamento de canteiros.
-- Controle de insumos.
-- Registro de entradas e saídas de estoque.
-- Cadastro e acompanhamento de plantios.
-- Cadastro e gerenciamento de tarefas.
-- Validação de recursos necessários para tarefas.
-- Registro de colheitas.
-- Acompanhamento da produção.
-- Relatórios gerenciais.
+### Administração (`ADMIN`)
+- **Dashboard (`/dashboard`)**: Indicadores em tempo real de culturas, canteiros disponíveis, plantios em crescimento, tarefas por status e alertas de estoque (`GET /api/dashboard/estoque` — História #13).
+- **Culturas (`/culturas` — História #2)**: Listagem, busca, cadastro, edição e exclusão de culturas (`GET/POST/PUT/DELETE /api/culturas`) com tempo de maturação (dias) e espaçamento ideal (metros).
+- **Canteiros (`/canteiros` — História #3)**: Listagem, busca, cadastro, edição e exclusão de canteiros (`GET/POST/PUT/DELETE /api/canteiros`) exibindo a cultura atual em cultivo.
+- **Insumos (`/insumos` — Histórias #4 e #13)**: Controle de sementes, fertilizantes e ferramentas (`GET/POST/PUT/DELETE /api/insumos`) com destaque automático para itens com estoque abaixo ou igual ao mínimo (`quantidade_estoque <= estoque_minimo`).
+- **Plantios (`/plantios` — Histórias #5 e #9)**: Registro e acompanhamento de plantios (`CRESCIMENTO`, `COLHIDO`, `PERDIDO`), previsão automática de colheita, peso colhido (kg) e vínculo opcional de insumos utilizados com baixa automática de estoque (`POST /api/plantios`).
+- **Tarefas (`/tarefas` — Histórias #6, #9, #10, #11 e #14)**: Criação e atribuição de tarefas a membros e canteiros, verificação de conflitos de horário no canteiro (409) e conflitos de ferramentas (409), fluxo de exceção de estoque (`AGUARDANDO_APROVACAO`) e botão para **Aprovação Excepcional de Estoque** (`POST /api/tarefas/:id/aprovar-estoque`).
+- **Usuários (`/usuarios` — História #1)**: Gestão completa de usuários e perfis (`GET/POST/PUT/DELETE /api/usuarios`).
+- **Colheitas (`/colheitas`), Produção (`/producao`) e Relatórios (`/relatorios` — História #12)**: Registro de colheitas em kg e relatórios gerenciais filtrados por período (`GET /api/dashboard/producao?data_inicio=...&data_fim=...`).
+- **Movimentações (`/movimentacoes`)**: Entradas, saídas manuais e estornos sincronizados com o saldo do banco de dados (`PUT /api/insumos/:id`).
 
-### Área do Membro
+### Área do Membro (`OPERACIONAL`)
+- **Minhas Tarefas (`/minhas-tarefas` — Histórias #7 e #8)**: Exibe exclusivamente as tarefas atribuídas ao usuário logado (`GET /api/tarefas/minhas`), permitindo filtrar por status, consultar detalhes e registrar a conclusão da atividade (`PATCH /api/tarefas/:id/concluir`).
 
-- Visualização das tarefas atribuídas.
-- Filtros por situação da tarefa.
-- Consulta aos detalhes das atividades.
-- Conclusão de tarefas.
-- Registro da quantidade real de insumo utilizada.
-- Atualização do estoque após a conclusão de tarefas.
-- Registro automático da movimentação de saída de insumos.
+## 4. Como executar o projeto completo (Backend + Frontend)
 
-## 4. Como executar o frontend
-
-### Pré-requisitos
-
-- Node.js e npm instalados.
-- Git instalado, caso deseje clonar o repositório.
-
-### Passo 1 — Clonar o repositório
+### Passo 1 — Iniciar o Backend (Terminal 1)
 
 ```bash
-git clone https://github.com/pedro-villela/hortaFamiliar.git
+cd backend
+npm install
+npm run db:setup
+npm run db:seed
+npm run dev
 ```
+A API estará disponível em `http://localhost:3000`.
 
-### Passo 2 — Acessar a branch do frontend
+**Credenciais criadas pelo `db:seed`:**
+- **Administrador (`ADMIN`):** `joao.admin@horta.com` / `Horta@123`
+- **Membro (`OPERACIONAL`):** `maria.operacional@horta.com` / `Horta@123`
 
-```bash
-cd hortaFamiliar
-git switch feature/frontend-inicial
-```
-
-### Passo 3 — Entrar na pasta do frontend
+### Passo 2 — Iniciar o Frontend (Terminal 2)
 
 ```bash
 cd frontend
-```
-
-### Passo 4 — Instalar as dependências
-
-```bash
 npm install
-```
-
-### Passo 5 — Iniciar o servidor de desenvolvimento
-
-```bash
 npm run dev
 ```
+Acesse no navegador: `http://localhost:5173`.
 
-O terminal exibirá o endereço local da aplicação, normalmente:
+*(Opcional: Para apontar para outra URL de API, configure `VITE_API_URL=http://localhost:3000` em um arquivo `.env` na pasta `frontend`).*
 
-http://localhost:5173
-
-### Passo 6 — Gerar a versão de produção
+### Passo 3 — Verificar Linter e Build de Produção
 
 ```bash
+cd frontend
+npm run lint
 npm run build
 ```
-
-Esse comando gera os arquivos de produção na pasta `dist`.
 
 ## 5. Estrutura do frontend
 
@@ -101,86 +77,13 @@ Esse comando gera os arquivos de produção na pasta `dist`.
 frontend/
 ├── public/
 ├── src/
-│   ├── components/
-│   ├── pages/
-│   ├── App.jsx
-│   └── main.jsx
+│   ├── components/       # BarraSuperior, MenuLateral, MenuMembro, Formulários e Validação
+│   ├── pages/            # Login, Cadastro, Dashboard, Culturas, Canteiros, Insumos, Plantios,
+│   │                     # Tarefas, MinhasTarefas, Usuarios, Colheitas, Producao, Movimentacoes, Relatorios
+│   ├── services/
+│   │   └── api.js        # Cliente HTTP centralizado com envio de token JWT
+│   ├── App.jsx           # Rotas públicas e protegidas por perfil (RotaProtegida)
+│   └── main.jsx          # Ponto de entrada React
 ├── package.json
 └── README.md
 ```
-
-### Organização
-
-- `components/`: componentes reutilizáveis da interface.
-- `pages/`: páginas e funcionalidades do sistema.
-- `App.jsx`: configuração das rotas.
-- `main.jsx`: inicialização da aplicação.
-
-## 6. Armazenamento de dados
-
-Nesta etapa, o frontend utiliza o `localStorage` do navegador para simular a persistência de informações.
-
-Entre as chaves utilizadas estão:
-
-- `horta_culturas`
-- `horta_canteiros`
-- `horta_plantios`
-- `horta_insumos`
-- `horta_tarefas`
-- `horta_movimentacoes`
-- `horta_colheitas`
-
-O armazenamento é local ao navegador e não representa uma integração definitiva com o banco de dados.
-
-## 7. Integração futura com o backend
-
-A integração com o backend deverá substituir as operações locais de leitura e gravação por requisições à API.
-
-As principais áreas de integração são:
-
-- Autenticação e autorização.
-- Cadastros de culturas e canteiros.
-- Gestão de plantios e colheitas.
-- Gestão de tarefas.
-- Controle de estoque.
-- Registro de movimentações.
-- Relatórios gerenciais.
-
-As regras de negócio deverão ser validadas também pelo backend, especialmente aquelas relacionadas ao estoque e à conclusão de tarefas.
-
-## 8. Testes realizados
-
-Durante o desenvolvimento, foram realizados testes manuais de:
-
-- Navegação entre as páginas.
-- Cadastro e gerenciamento de tarefas.
-- Validação de recursos e conflitos.
-- Visualização e conclusão de tarefas pelo membro.
-- Registro de utilização de insumos.
-- Atualização de estoque e histórico de movimentações.
-- Atualização dos indicadores do Dashboard.
-- Atualização e filtragem dos relatórios.
-
-Também foi executado com sucesso o comando:
-
-```bash
-npm run build
-```
-
-Os testes descritos são manuais, não constituindo uma suíte automatizada do frontend.
-
-## 9. Repositório
-
-Repositório principal:
-
-https://github.com/pedro-villela/hortaFamiliar
-
-Branch utilizada para desenvolvimento do frontend:
-
-`feature/frontend-inicial`
-
-## 10. Observações
-
-O frontend encontra-se em desenvolvimento e utiliza dados simulados.
-
-A integração definitiva com o backend e com o banco de dados será realizada em etapa posterior, em colaboração com a equipe do projeto.

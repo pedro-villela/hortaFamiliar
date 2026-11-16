@@ -5,11 +5,9 @@ function BarraSuperior() {
 
   return (
     <header className="barra-superior">
-      <input
-        type="search"
-        placeholder="Buscar no sistema..."
-        aria-label="Buscar no sistema"
-      />
+      <div>
+        <strong>🌱 Sistema de Gestão Horta Comunitária e Familiar</strong>
+      </div>
 
       <div className="usuario">
         <span>👤</span>

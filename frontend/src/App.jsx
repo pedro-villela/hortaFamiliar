@@ -18,6 +18,7 @@ import Movimentacoes from './pages/Movimentacoes';
 import Relatorios from './pages/Relatorios';
 import Colheitas from './pages/Colheitas';
 import Producao from './pages/Producao';
+import Usuarios from './pages/Usuarios';
 
 import { obterToken, obterUsuarioLogado } from './services/api';
 import './App.css';
@@ -70,6 +71,10 @@ function App() {
         <Route
           path="/insumos"
           element={<RotaProtegida apenasAdmin><Insumos /></RotaProtegida>}
+        />
+        <Route
+          path="/usuarios"
+          element={<RotaProtegida apenasAdmin><Usuarios /></RotaProtegida>}
         />
 
         {/* Gestão da horta */}

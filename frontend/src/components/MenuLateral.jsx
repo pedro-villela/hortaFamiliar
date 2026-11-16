@@ -12,6 +12,7 @@ function MenuLateral() {
     { nome: 'Plantios', caminho: '/plantios' },
     { nome: 'Insumos', caminho: '/insumos' },
     { nome: 'Tarefas', caminho: '/tarefas' },
+    { nome: 'Usuários', caminho: '/usuarios' },
     { nome: 'Relatórios', caminho: '/relatorios' },
     { nome: 'Movimentações', caminho: '/movimentacoes' },
     { nome: 'Colheitas', caminho: '/colheitas' },
