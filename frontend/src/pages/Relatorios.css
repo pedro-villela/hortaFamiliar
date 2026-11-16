@@ -1,0 +1,244 @@
+
+.relatorios-cabecalho {
+  margin-bottom: 25px;
+}
+
+.relatorios-cabecalho h1 {
+  color: #315c3b;
+}
+
+.relatorios-cabecalho p {
+  color: #666;
+}
+
+.relatorios-filtros {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 15px;
+  background: white;
+  padding: 22px;
+  border: 1px solid #e1e6e1;
+  border-radius: 10px;
+  margin-bottom: 25px;
+}
+
+.relatorios-filtros > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relatorios-filtros label {
+  font-weight: 600;
+}
+
+.relatorios-filtros input {
+  padding: 11px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+}
+
+.relatorios-botao-imprimir {
+  padding: 12px 18px;
+  background: white;
+  color: #315c3b;
+  border: 1px solid #315c3b;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.relatorios-indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.relatorios-indicadores article {
+  background: white;
+  border: 1px solid #e1e6e1;
+  border-radius: 10px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.relatorios-indicadores span {
+  color: #666;
+  font-size: 14px;
+}
+
+.relatorios-indicadores strong {
+  color: #315c3b;
+  font-size: 32px;
+}
+
+.relatorios-secao {
+  background: white;
+  padding: 24px;
+  border: 1px solid #e1e6e1;
+  border-radius: 10px;
+  margin-bottom: 25px;
+}
+
+.relatorios-secao h2 {
+  color: #315c3b;
+  font-size: 20px;
+  margin-top: 0;
+  margin-bottom: 22px;
+}
+
+.relatorios-grafico {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.relatorios-grafico-legenda {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.relatorios-grafico-fundo {
+  width: 100%;
+  height: 14px;
+  background: #edf0ed;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.relatorios-grafico-barra {
+  height: 100%;
+  border-radius: 10px;
+}
+
+.relatorios-grafico-barra.concluidas {
+  background: #568b62;
+}
+
+.relatorios-grafico-barra.andamento {
+  background: #7292d0;
+}
+
+.relatorios-grafico-barra.pendentes {
+  background: #e5ad45;
+}
+
+.relatorios-tabela-container {
+  overflow-x: auto;
+}
+
+.relatorios-tabela-container table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.relatorios-tabela-container th,
+.relatorios-tabela-container td {
+  padding: 13px;
+  border-bottom: 1px solid #e8ece8;
+  white-space: nowrap;
+}
+
+.relatorios-tabela-container th {
+  background: #f2f6f2;
+  color: #315c3b;
+}
+
+.relatorios-vazio {
+  color: #777;
+  padding: 20px 0;
+}
+
+@media (max-width: 900px) {
+  .relatorios-indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .relatorios-indicadores {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Configuração de impressão */
+@media print {
+  .menu-lateral,
+  .barra-superior,
+  .relatorios-filtros {
+    display: none !important;
+  }
+
+  .area-principal,
+  .conteudo-dashboard,
+  .relatorios-pagina {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .relatorios-secao,
+  .relatorios-indicadores article {
+    break-inside: avoid;
+  }
+
+  body {
+    background: white !important;
+  }
+}
+
+
+/* =========================================
+   INDICADORES DE PRODUÇÃO
+========================================= */
+
+.relatorios-indicadores-producao {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .relatorios-indicadores-producao {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .relatorios-indicadores-producao {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Melhorias na impressão dos relatórios */
+@media print {
+  .relatorios-tabela-container {
+    overflow: visible !important;
+  }
+
+  .relatorios-tabela-container table {
+    width: 100%;
+    table-layout: auto;
+    font-size: 10px;
+  }
+
+  .relatorios-tabela-container th,
+  .relatorios-tabela-container td {
+    padding: 7px 5px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .relatorios-secao {
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+
+  .relatorios-secao h2 {
+    margin-bottom: 12px;
+  }
+}

@@ -1,2 +1,16 @@
-.env
+# Dependências
 node_modules/
+**/node_modules/
+
+# Arquivos gerados pelo Vite
+dist/
+**/dist/
+
+# Variáveis de ambiente
+.env
+.env.local
+**/.env
+**/.env.local
+
+# Arquivos temporários
+*.log
