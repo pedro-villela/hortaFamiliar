@@ -1,4 +1,4 @@
-# Relatório Individual de Contribuição — Sprint 2 — Adriana Martelli (RA 2840482423026)
+# Relatório Individual de Contribuição — Sprint 1 e 2 — Adriana Martelli (RA 2840482423026)
 
 **Projeto:** Horta Familiar  
 **Disciplina:** Laboratório de Engenharia de Software  

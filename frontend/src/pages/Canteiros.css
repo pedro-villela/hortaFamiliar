@@ -1,0 +1,52 @@
+
+.formulario-canteiro {
+  background: white;
+  padding: 25px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  max-width: 600px;
+  margin-bottom: 30px;
+}
+
+.formulario-canteiro h2 {
+  margin-top: 0;
+}
+
+.formulario-canteiro label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: bold;
+}
+
+.formulario-canteiro input,
+.formulario-canteiro select,
+.formulario-canteiro textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5d9d5;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.status-canteiro {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status-canteiro.disponivel {
+  background: #e1eedc;
+  color: #315c3b;
+}
+
+.status-canteiro.em-uso {
+  background: #fde8e8;
+  color: #a12b2b;
+}
+
+.status-canteiro.em-preparo {
+  background: #fff0c2;
+  color: #906000;
+}

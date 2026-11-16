@@ -1,0 +1,72 @@
+
+/* Estrutura do menu lateral */
+.menu-lateral {
+  width: 240px;
+  flex-shrink: 0;
+  min-height: 100vh;
+  background-color: #315c3b;
+  color: white;
+  padding: 35px 24px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* Título HORTA FAMILIAR */
+.menu-lateral h2 {
+  font-size: 19px;
+  margin-bottom: 55px;
+}
+
+/* Organização dos links */
+.menu-lateral nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Aparência dos links */
+.menu-lateral a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+/* Efeito ao passar o mouse */
+.menu-lateral a:hover {
+  background-color: #42734d;
+}
+
+/* Página selecionada */
+.menu-lateral a.active {
+  background-color: #24462d;
+  font-weight: bold;
+}
+
+/* Botão sair, caso utilizado */
+.botao-sair {
+  margin-top: auto;
+  background: transparent;
+  border: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Ajustes para telas menores */
+@media (max-width: 850px) {
+  .menu-lateral {
+    width: 190px;
+  }
+}
+
+@media (max-width: 600px) {
+  .menu-lateral {
+    width: 100%;
+    min-height: auto;
+  }
+}
