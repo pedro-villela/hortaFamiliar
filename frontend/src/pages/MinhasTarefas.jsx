@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import MenuLateral from '../components/MenuLateral';
 import MenuMembro from '../components/MenuMembro';
 import BarraSuperior from '../components/BarraSuperior';
 import { requisicao, obterUsuarioLogado } from '../services/api';
@@ -80,7 +81,11 @@ function MinhasTarefas() {
 
   return (
     <div className="layout-admin">
-      <MenuMembro />
+      {usuario?.perfil === 'ADMIN' ? (
+        <MenuLateral />
+      ) : (
+        <MenuMembro aoClicarInicio={voltarParaLista} />
+      )}
 
       <div className="area-principal">
         <BarraSuperior />

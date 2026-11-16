@@ -12,14 +12,12 @@ function MenuLateral() {
     { nome: 'Plantios', caminho: '/plantios' },
     { nome: 'Insumos', caminho: '/insumos' },
     { nome: 'Tarefas', caminho: '/tarefas' },
+    { nome: 'Minhas Tarefas', caminho: '/minhas-tarefas' },
     { nome: 'Usuários', caminho: '/usuarios' },
-    { nome: 'Relatórios', caminho: '/relatorios' },
-    { nome: 'Movimentações', caminho: '/movimentacoes' },
     { nome: 'Colheitas', caminho: '/colheitas' },
     { nome: 'Produção', caminho: '/producao' },
-
-    // Acesso à área do membro
-    { nome: 'Área do Membro', caminho: '/minhas-tarefas' }
+    { nome: 'Movimentações', caminho: '/movimentacoes' },
+    { nome: 'Relatórios', caminho: '/relatorios' }
   ];
 
   function sair() {

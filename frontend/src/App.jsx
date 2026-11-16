@@ -38,16 +38,29 @@ function RotaProtegida({ children, apenasAdmin = false }) {
   return children;
 }
 
+function RedirecionamentoInicial() {
+  const token = obterToken();
+  const usuario = obterUsuarioLogado();
+
+  if (!token || !usuario) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <Navigate
+      to={usuario.perfil === 'ADMIN' ? '/dashboard' : '/minhas-tarefas'}
+      replace
+    />
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Página inicial */}
-        <Route
-          path="/"
-          element={<Navigate to="/login" replace />}
-        />
+        {/* Página inicial inteligente */}
+        <Route path="/" element={<RedirecionamentoInicial />} />
 
         {/* Login e cadastro (Públicas) */}
         <Route path="/login" element={<Login />} />
@@ -87,7 +100,7 @@ function App() {
           element={<RotaProtegida apenasAdmin><Tarefas /></RotaProtegida>}
         />
 
-        {/* Área do Membro (Qualquer usuário logado) */}
+        {/* Área do Membro / Minhas Tarefas (Qualquer usuário logado) */}
         <Route
           path="/minhas-tarefas"
           element={<RotaProtegida><MinhasTarefas /></RotaProtegida>}
@@ -112,6 +125,9 @@ function App() {
           path="/relatorios"
           element={<RotaProtegida apenasAdmin><Relatorios /></RotaProtegida>}
         />
+
+        {/* Qualquer rota inexistente redireciona com segurança */}
+        <Route path="*" element={<RedirecionamentoInicial />} />
 
       </Routes>
     </BrowserRouter>
