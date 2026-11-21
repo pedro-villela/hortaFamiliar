@@ -4,7 +4,7 @@ Sistema web para gerenciamento de uma horta familiar, permitindo o cadastro e a 
 
 O sistema conta com funcionalidades administrativas para acompanhamento da produção, identificação de insumos com estoque baixo e aprovação excepcional de consumo de materiais.
 
-**Deploy:** ainda não publicado.
+**Deploy:** [Horta Familiar](https://hortafamiliar.onrender.com).
 
 **Equipe:** Thaynara Franco (RA 2840482423001) — Guilherme Assunção (RA 2840482423014) — Adriana Martelli (RA 2840482423026) — Wilson Lau (RA 2840482423013) — Pedro Villela (RA 2840482423009).
 
