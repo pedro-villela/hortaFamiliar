@@ -1,34 +1,33 @@
-# Mostra Virtual — [Nome do Projeto]
+# Mostra Virtual — Horta Familiar
 
-**Frase de destaque:** [até 120 caracteres: o que o sistema faz, para quem]
+**Frase de destaque:** Gestão simples e organizada de hortas familiares, do plantio à colheita.
 
-**Resumo:** [até 600 caracteres: problema, solução e o diferencial técnico]
+**Resumo:** O Horta Familiar é um sistema web desenvolvido para apoiar a gestão de hortas familiares. A aplicação reúne funcionalidades de cadastro de culturas e canteiros, controle de insumos e movimentações, planejamento de plantios, distribuição e acompanhamento de tarefas, registro de colheitas e consulta de relatórios. O projeto foi construído em equipe, com etapas de levantamento de requisitos, prototipação, desenvolvimento, testes e documentação.
 
 ## Equipe
 
-| Nome completo | RA | Papéis exercidos (Sprints 1–4) |
-|---|---|---|
-| Thaynara Franco | 2840482423001 | S1: [papel] · S2: [papel] · S3: [papel] · S4: [papel] |
-| Guilherme Assunção | 2840482423014 | S1: [papel] · S2: [papel] · S3: [papel] · S4: [papel] |
-| Adriana Martelli | 2840482423026 | S1: [papel] · S2: [papel] · S3: [papel] · S4: [papel] |
-| Wilson Lau | 2840482423013 | S1: [papel] · S2: [papel] · S3: [papel] · S4: [papel] |
-| Pedro Villela | 2840482423009 | S1: [papel] · S2: [papel] · S3: [papel] · S4: [papel] |
+| Nome completo | RA |
+|---|---|
+| Adriana Martelli | 2840482423026 |
+| Guilherme Assunção | 2840482423014 |
+| Pedro Villela | 2840482423009 |
+| Thaynara Franco | 2840482423001 |
+| Wilson Lau | 2840482423013 |
 
-**Cliente / PO:** [nome ou organização, ou descrição genérica se não houver autorização] · **Trilha:** [A ou B]
+**Cliente / PO:** Pequeno produtor.
+**Trilha:** B
 
-**Tecnologias:** [ex.: Node.js, Express, PostgreSQL, Render, GitHub Actions]
+**Tecnologias:** React, Vite, JavaScript, Node.js, Express, PostgreSQL, GitHub, Render.
 
 ## Links
 
-- Vídeo: https://www.youtube.com/watch?v=GQwbCGheoXQ
-- Deploy: [URL pública]
-- Repositório: [URL]
+- Vídeo: [inserir link não listado]
+- Deploy: https://hortafamiliar.onrender.com
+- Repositório: https://github.com/pedro-villela/hortaFamiliar
 
 ## Aprendizado da equipe
 
-[até 400 caracteres: a principal lição de engenharia ágil que a equipe tira do semestre]
+O projeto permitiu aplicar, na prática, levantamento de requisitos, prototipação, desenvolvimento web, testes, documentação e versionamento com Git. A equipe aprendeu a dividir responsabilidades, colaborar por sprints e ajustar funcionalidades a partir de validações, compreendendo a importância da comunicação e da integração entre as etapas do desenvolvimento.
 
 ## Imagens enviadas
 
-- capa.png (1280×720)
-- tela-1.png, tela-2.png, tela-3.png (1920×1080)
