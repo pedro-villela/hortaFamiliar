@@ -21,7 +21,7 @@
 
 ## Links
 
-- Vídeo: [inserir link não listado]
+- Video: (https://www.youtube.com/watch?v=GQwbCGheoXQ)
 - Deploy: https://hortafamiliar.onrender.com
 - Repositório: https://github.com/pedro-villela/hortaFamiliar
 
